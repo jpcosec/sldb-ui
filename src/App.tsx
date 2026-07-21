@@ -19,6 +19,13 @@ import {
   FiUpload,
   FiX,
 } from "react-icons/fi";
+import {
+  WorkspaceMain,
+  WorkspaceShell,
+  WorkspaceSidebar,
+  WorkspaceSidebarHeader,
+  WorkspaceTopToolbar,
+} from "./components/workspace-shell";
 import { loadDocuments } from "./data/documents";
 import { marcadoAdapter } from "./lib/marcado-adapter";
 import { type MarcadoDocument, type MarkerRange } from "./lib/marcado";
@@ -596,21 +603,14 @@ export default function App() {
   const firstDraftEntry = draftEntries[0] ?? null;
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-background text-foreground">
-      <div className="grid h-full lg:grid-cols-[300px_minmax(0,1fr)]">
-        <aside className="border-b border-border bg-surface lg:border-r lg:border-b-0 overflow-y-auto">
-          <div className="p-5 border-b border-border">
-            <p className="text-xs uppercase tracking-[0.18em] text-primary font-semibold mb-2">
-              @sldb/ui
-            </p>
-            <h1 className="text-2xl font-heading font-semibold mb-2">
-              Open a structured Markdown document
-            </h1>
-            <p className="text-sm text-muted leading-6">
-              Start with a local file, upload Markdown into this session, open a sample document,
-              or resume a saved draft. This workspace is the human entry surface for Marcado-compatible documents.
-            </p>
-          </div>
+    <WorkspaceShell
+      sidebar={
+        <WorkspaceSidebar>
+          <WorkspaceSidebarHeader
+            eyebrow="@sldb/ui"
+            title="Open a structured Markdown document"
+            description="Start with a local file, upload Markdown into this session, open a sample document, or resume a saved draft. This workspace is the human entry surface for Marcado-compatible documents."
+          />
 
           <div className="p-4 space-y-5">
             <section className="space-y-3">
@@ -721,9 +721,10 @@ export default function App() {
               />
             </section>
           </div>
-        </aside>
-
-        <main className="min-w-0 overflow-hidden">
+        </WorkspaceSidebar>
+      }
+      main={
+        <WorkspaceMain>
           {selectedDoc ? (
             <DocumentWorkspace
               document={selectedDoc}
@@ -760,9 +761,9 @@ export default function App() {
               onExploreFiles={handleExploreFiles}
             />
           ) : null}
-        </main>
-      </div>
-    </div>
+        </WorkspaceMain>
+      }
+    />
   );
 }
 
@@ -863,41 +864,36 @@ function DocumentWorkspace({
   return (
     <div className="grid h-full min-w-0 xl:grid-cols-[minmax(0,1fr)_360px]">
       <section className="min-w-0 overflow-y-auto">
-        <header className="sticky top-0 z-10 border-b border-border bg-background/92 backdrop-blur px-6 py-5 lg:px-8">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <p className="text-sm text-primary font-medium mb-1">{document.id}</p>
-                <h2 className="text-3xl font-heading font-semibold">{document.title}</h2>
-                <p className="text-sm text-muted mt-2 max-w-3xl leading-6">
-                  Human entry surface for structured Markdown: open documents, compare rendered and source views,
-                  inspect markers, and keep Markdown as the source of truth.
-                </p>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {fileLabel ? <p className="text-xs text-muted/80">{fileLabel}</p> : null}
-                  <InterpretationModeBadge mode={interpretationMode} />
-                </div>
-              </div>
-
-              <div className="inline-flex rounded-xl border border-border bg-surface p-1 self-start lg:self-auto">
-                <ViewButton active={viewMode === "rendered"} onClick={() => onChangeViewMode("rendered")} icon={<FiBookOpen />}>
-                  Rendered
-                </ViewButton>
-                <ViewButton active={viewMode === "source"} onClick={() => onChangeViewMode("source")} icon={<FiCode />}>
-                  Source
-                </ViewButton>
-              </div>
+        <WorkspaceTopToolbar
+          eyebrow={document.id}
+          title={document.title}
+          description="Human entry surface for structured Markdown: open documents, compare rendered and source views, inspect markers, and keep Markdown as the source of truth."
+          metadata={
+            <>
+              {fileLabel ? <p className="text-xs text-muted/80">{fileLabel}</p> : null}
+              <InterpretationModeBadge mode={interpretationMode} />
+            </>
+          }
+          viewSwitcher={
+            <div className="inline-flex self-start rounded-xl border border-border bg-surface p-1 lg:self-auto">
+              <ViewButton active={viewMode === "rendered"} onClick={() => onChangeViewMode("rendered")} icon={<FiBookOpen />}>
+                Rendered
+              </ViewButton>
+              <ViewButton active={viewMode === "source"} onClick={() => onChangeViewMode("source")} icon={<FiCode />}>
+                Source
+              </ViewButton>
             </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              {viewMode === "rendered" && selectionState ? (
-                <MarkerComposer
-                  selectionText={selectionState.text}
-                  namespaces={document.namespaces.map((namespace) => namespace.name)}
-                  onAddMarker={onAddMarker}
-                  onCancel={onClearSelection}
-                />
-              ) : null}
+          }
+          contextualActions={viewMode === "rendered" && selectionState ? (
+            <MarkerComposer
+              selectionText={selectionState.text}
+              namespaces={document.namespaces.map((namespace) => namespace.name)}
+              onAddMarker={onAddMarker}
+              onCancel={onClearSelection}
+            />
+          ) : undefined}
+          primaryActions={
+            <>
               <ActionButton onClick={onRefreshRuntime} icon={<FiGitBranch />} label="Refresh runtime" />
               <ActionButton onClick={onSaveDraft} icon={<FiSave />} label="Save draft" />
               <ActionButton onClick={onLoad} icon={<FiUpload />} label="Load draft" />
@@ -911,10 +907,10 @@ function DocumentWorkspace({
                 </>
               ) : null}
               <UploadActionButton onChange={onUpload} />
-              {notice ? <span className="text-sm text-muted">{notice}</span> : null}
-            </div>
-          </div>
-        </header>
+            </>
+          }
+          notice={notice ? <span className="text-sm text-muted">{notice}</span> : undefined}
+        />
 
         <div className="p-6 lg:p-8">
           <div className="rounded-3xl border border-border bg-surface shadow-sm overflow-hidden">
