@@ -147,6 +147,34 @@ export default function App() {
     [workspaceEntries, selectedSlug]
   );
 
+  const sampleDocuments = useMemo(
+    () => workspaceEntries
+      .filter((entry) => entry.origin === "bundled")
+      .map((entry) => {
+        const doc = documents.find((item) => item.slug === entry.slug);
+        return {
+          slug: entry.slug,
+          title: doc?.title ?? entry.fileName ?? entry.slug.replace(/^file:/, ""),
+          description: doc?.id ?? "Bundled sample document",
+        };
+      }),
+    [documents, workspaceEntries]
+  );
+
+  const draftEntries = useMemo(
+    () => workspaceEntries
+      .filter((entry) => Boolean(readStoredSource(entry.slug)))
+      .map((entry) => {
+        const doc = documents.find((item) => item.slug === entry.slug);
+        return {
+          slug: entry.slug,
+          title: doc?.title ?? entry.fileName ?? entry.slug.replace(/^file:/, ""),
+          description: entry.filePath ?? entry.fileName ?? doc?.id ?? "Saved draft",
+        };
+      }),
+    [documents, notice, workspaceEntries]
+  );
+
   const visibleMarkers = useMemo(() => {
     if (!selectedDoc) return [];
     if (markerFilter.length === 0) return selectedDoc.markers;
@@ -270,21 +298,45 @@ export default function App() {
     setNotice(`Saved file ${fileHandle.name}`);
   };
 
-  const handleLoad = () => {
-    if (!selectedDoc || !selectedEntry) return;
-    const stored = readStoredSource(selectedDoc.slug);
+  const handleResumeDraft = (slug: string) => {
+    const draftDoc = documents.find((doc) => doc.slug === slug);
+    if (!draftDoc) return;
+
+    const stored = readStoredSource(slug);
     if (!stored) {
-      setNotice(`No saved draft found for ${selectedDoc.id}`);
+      setNotice(`No saved draft found for ${draftDoc.id}`);
       return;
     }
+
     setWorkspaceDocuments((current) =>
       upsertWorkspaceDocument(current, {
-        slug: selectedDoc.slug,
+        slug,
         source: stored,
-        model: parseMarcadoDocument(selectedDoc.slug, stored),
+        model: parseMarcadoDocument(slug, stored),
       })
     );
-    setNotice(`Loaded saved draft for ${selectedDoc.id}`);
+    setSelectedSlug(slug);
+    setWorkspaceUi((current) => ({
+      ...current,
+      viewMode: "source",
+      notice: `Resumed saved draft for ${draftDoc.id}`,
+    }));
+  };
+
+  const handleLoad = () => {
+    if (!selectedDoc) return;
+    handleResumeDraft(selectedDoc.slug);
+  };
+
+  const handleOpenSample = (slug: string) => {
+    const sampleDoc = documents.find((doc) => doc.slug === slug);
+    if (!sampleDoc) return;
+    setSelectedSlug(slug);
+    setWorkspaceUi((current) => ({
+      ...current,
+      viewMode: "rendered",
+      notice: `Opened sample ${sampleDoc.title}`,
+    }));
   };
 
   const handleReset = () => {
@@ -509,34 +561,135 @@ export default function App() {
     setMarkerFilter([]);
   }, [selectedSlug]);
 
+  const canUseNativeFiles = supportsFileSystemAccess();
+  const firstSampleDocument = sampleDocuments[0] ?? null;
+  const firstDraftEntry = draftEntries[0] ?? null;
+
   return (
     <div className="h-screen w-screen overflow-hidden bg-background text-foreground">
       <div className="grid h-full lg:grid-cols-[300px_minmax(0,1fr)]">
         <aside className="border-b border-border bg-surface lg:border-r lg:border-b-0 overflow-y-auto">
           <div className="p-5 border-b border-border">
             <p className="text-xs uppercase tracking-[0.18em] text-primary font-semibold mb-2">
-              Marcado UI
+              @sldb/ui
             </p>
             <h1 className="text-2xl font-heading font-semibold mb-2">
-              Semantic Markdown ASG
+              Open a structured Markdown document
             </h1>
             <p className="text-sm text-muted leading-6">
-              Browse example documents, inspect semantic markers, edit source,
-              and save or reload local Marcado drafts.
+              Start with a local file, upload Markdown into this session, open a sample document,
+              or resume a saved draft. This workspace is the human entry surface for Marcado-compatible documents.
             </p>
           </div>
 
-          <div className="p-3 space-y-3">
-            <div className="flex gap-2">
-              <ActionButton onClick={handleCreateFile} icon={<FiPlus />} label="New file" />
-              <ActionButton onClick={handleRenameFile} icon={<FiEdit2 />} label="Rename" />
-            </div>
-            <FileExplorerTree
-              documents={documents}
-              entries={workspaceEntries}
-              selectedSlug={selectedSlug}
-              onSelect={setSelectedSlug}
-            />
+          <div className="p-4 space-y-5">
+            <section className="space-y-3">
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted">Start here</h2>
+                <p className="mt-2 text-sm text-muted leading-6">
+                  Pick the fastest path into the workspace. The current document tools stay available below once you are inside.
+                </p>
+              </div>
+              <div className="space-y-3">
+                {canUseNativeFiles ? (
+                  <EntryActionCard
+                    icon={<FiFolder />}
+                    title="Open a local Markdown file"
+                    description="Use the browser file picker when you want to work on a real file right away."
+                    badge="recommended"
+                    ariaLabel="Open a local Markdown file"
+                    onClick={handleOpenFile}
+                  />
+                ) : null}
+                <UploadActionCard
+                  icon={<FiUpload />}
+                  title="Upload a Markdown file"
+                  description="Bring a document into this browser session when native file access is not available or not needed."
+                  badge="browser-safe"
+                  ariaLabel="Upload a Markdown document"
+                  onChange={handleUpload}
+                />
+                {firstSampleDocument ? (
+                  <EntryActionCard
+                    icon={<FiBookOpen />}
+                    title={`Open sample: ${firstSampleDocument.title}`}
+                    description="Start from a bundled example to inspect structure, markers, and the dual source/render flow."
+                    badge="sample"
+                    ariaLabel={`Open sample ${firstSampleDocument.title}`}
+                    onClick={() => handleOpenSample(firstSampleDocument.slug)}
+                  />
+                ) : null}
+                <EntryActionCard
+                  icon={<FiSave />}
+                  title={firstDraftEntry ? `Resume draft: ${firstDraftEntry.title}` : "Resume a saved draft"}
+                  description={firstDraftEntry
+                    ? "Jump back into the latest saved draft and continue editing in source view."
+                    : "Saved drafts will appear here after you use Save draft on any document."}
+                  badge={firstDraftEntry ? "saved" : undefined}
+                  ariaLabel={firstDraftEntry ? `Resume draft ${firstDraftEntry.title}` : "Resume a saved draft"}
+                  onClick={firstDraftEntry ? () => handleResumeDraft(firstDraftEntry.slug) : undefined}
+                  disabled={!firstDraftEntry}
+                />
+              </div>
+            </section>
+
+            <section className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted">Sample documents</h2>
+                <span className="text-xs text-muted">{sampleDocuments.length} available</span>
+              </div>
+              <div className="space-y-2">
+                {sampleDocuments.map((sample) => (
+                  <EntryActionCard
+                    key={sample.slug}
+                    icon={<FiFileText />}
+                    title={sample.title}
+                    description={sample.description}
+                    badge={sample.slug === selectedSlug ? "current" : "sample"}
+                    ariaLabel={`Open sample ${sample.title}`}
+                    onClick={() => handleOpenSample(sample.slug)}
+                  />
+                ))}
+              </div>
+            </section>
+
+            {draftEntries.length > 0 ? (
+              <section className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted">Saved drafts</h2>
+                  <span className="text-xs text-muted">{draftEntries.length} ready to resume</span>
+                </div>
+                <div className="space-y-2">
+                  {draftEntries.map((entry) => (
+                    <EntryActionCard
+                      key={entry.slug}
+                      icon={<FiSave />}
+                      title={entry.title}
+                      description={entry.description}
+                      badge={entry.slug === selectedSlug ? "current" : "draft"}
+                      ariaLabel={`Resume draft ${entry.title}`}
+                      onClick={() => handleResumeDraft(entry.slug)}
+                    />
+                  ))}
+                </div>
+              </section>
+            ) : null}
+
+            <section className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted">Workspace files</h2>
+                <div className="flex gap-2">
+                  <ActionButton onClick={handleCreateFile} icon={<FiPlus />} label="New file" />
+                  <ActionButton onClick={handleRenameFile} icon={<FiEdit2 />} label="Rename" />
+                </div>
+              </div>
+              <FileExplorerTree
+                documents={documents}
+                entries={workspaceEntries}
+                selectedSlug={selectedSlug}
+                onSelect={setSelectedSlug}
+              />
+            </section>
           </div>
         </aside>
 
@@ -549,7 +702,7 @@ export default function App() {
               notice={notice}
               fileLabel={selectedEntry?.filePath ?? selectedEntry?.fileName ?? null}
               selectionState={selectionState}
-              canUseNativeFiles={supportsFileSystemAccess()}
+              canUseNativeFiles={canUseNativeFiles}
               markerFilter={markerFilter}
               visibleMarkers={visibleMarkers}
               onChangeViewMode={setViewMode}
@@ -684,8 +837,8 @@ function DocumentWorkspace({
                 <p className="text-sm text-primary font-medium mb-1">{document.id}</p>
                 <h2 className="text-3xl font-heading font-semibold">{document.title}</h2>
                 <p className="text-sm text-muted mt-2 max-w-3xl leading-6">
-                  UI preview for Marcado documents: render the plain-text projection,
-                  inspect raw milestone markers, and iterate on the source locally.
+                  Human entry surface for structured Markdown: open documents, compare rendered and source views,
+                  inspect markers, and keep Markdown as the source of truth.
                 </p>
                 {fileLabel ? (
                   <p className="text-xs text-muted/80 mt-2">{fileLabel}</p>
@@ -723,17 +876,7 @@ function DocumentWorkspace({
                   <ActionButton onClick={onExploreFiles} icon={<FiHash />} label="Explore folder" />
                 </>
               ) : null}
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground hover:bg-surface-hover">
-                <FiUpload />
-                <span>Upload file</span>
-                <input
-                  type="file"
-                  accept=".md,text/markdown,text/plain"
-                  className="hidden"
-                  aria-label="Upload file"
-                  onChange={onUpload}
-                />
-              </label>
+              <UploadActionButton onChange={onUpload} />
               {notice ? <span className="text-sm text-muted">{notice}</span> : null}
             </div>
           </div>
@@ -964,6 +1107,114 @@ function ActionButton({ onClick, icon, label }: { onClick: () => void; icon: Rea
       {icon}
       {label}
     </button>
+  );
+}
+
+function EntryActionCard({
+  icon,
+  title,
+  description,
+  badge,
+  ariaLabel,
+  onClick,
+  disabled = false,
+}: {
+  icon: ReactNode;
+  title: string;
+  description: string;
+  badge?: string;
+  ariaLabel?: string;
+  onClick?: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel ?? title}
+      className={`block w-full rounded-2xl border p-4 text-left transition ${
+        disabled
+          ? "cursor-not-allowed border-border bg-background/70 text-muted opacity-70"
+          : "cursor-pointer border-border bg-background hover:border-primary/40 hover:bg-primary/5"
+      }`}
+    >
+      <div className="flex items-start gap-3">
+        <div className={`mt-0.5 rounded-xl border p-2 ${disabled ? "border-border bg-surface text-muted" : "border-primary/20 bg-primary/10 text-primary"}`}>
+          {icon}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-sm font-semibold text-foreground">{title}</div>
+            {badge ? (
+              <span className="rounded-full border border-border px-2 py-0.5 text-[11px] uppercase tracking-wide text-muted">
+                {badge}
+              </span>
+            ) : null}
+          </div>
+          <p className="mt-2 text-sm leading-6 text-muted">{description}</p>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function UploadActionButton({ onChange }: { onChange: React.ChangeEventHandler<HTMLInputElement> }) {
+  return (
+    <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground hover:bg-surface-hover">
+      <FiUpload />
+      <span>Upload file</span>
+      <input
+        type="file"
+        accept=".md,text/markdown,text/plain"
+        className="hidden"
+        aria-label="Upload file"
+        onChange={onChange}
+      />
+    </label>
+  );
+}
+
+function UploadActionCard({
+  icon,
+  title,
+  description,
+  badge,
+  ariaLabel,
+  onChange,
+}: {
+  icon: ReactNode;
+  title: string;
+  description: string;
+  badge?: string;
+  ariaLabel?: string;
+  onChange: React.ChangeEventHandler<HTMLInputElement>;
+}) {
+  return (
+    <label className="block cursor-pointer rounded-2xl border border-border bg-background p-4 text-left transition hover:border-primary/40 hover:bg-primary/5">
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5 rounded-xl border border-primary/20 bg-primary/10 p-2 text-primary">
+          {icon}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-sm font-semibold text-foreground">{title}</div>
+            {badge ? (
+              <span className="rounded-full border border-border px-2 py-0.5 text-[11px] uppercase tracking-wide text-muted">
+                {badge}
+              </span>
+            ) : null}
+          </div>
+          <p className="mt-2 text-sm leading-6 text-muted">{description}</p>
+        </div>
+      </div>
+      <input
+        type="file"
+        accept=".md,text/markdown,text/plain"
+        className="hidden"
+        aria-label={ariaLabel ?? title}
+        onChange={onChange}
+      />
+    </label>
   );
 }
 
