@@ -35,6 +35,7 @@ npm run dev
 npm run build
 npm test
 npm run test:watch
+npm run e2e
 npm run sync:runtime
 ```
 
@@ -52,4 +53,5 @@ npm run sync:runtime
 
 - Native file save/open/folder exploration uses the browser File System Access API when available.
 - Browser-local drafts use `localStorage`.
+- `npm run e2e` runs Playwright browser checks against a local Vite server.
 - Git remains the intended temporal history layer; the UI focuses on document work surfaces rather than inventing a separate versioning system.
