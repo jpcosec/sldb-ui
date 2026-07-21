@@ -20,8 +20,8 @@ import {
   FiX,
 } from "react-icons/fi";
 import { loadDocuments } from "./data/documents";
-import { parseMarcadoDocument, type MarcadoDocument, type MarkerRange } from "./lib/marcado";
-import { parseSourceWithRuntimeFallback } from "./lib/marcado-runtime";
+import { marcadoAdapter } from "./lib/marcado-adapter";
+import { type MarcadoDocument, type MarkerRange } from "./lib/marcado";
 import {
   basenameWithoutExtension,
   createInitialWorkspaceDocumentStore,
@@ -184,11 +184,7 @@ export default function App() {
   const handleSourceChange = (value: string) => {
     if (!selectedDoc) return;
     setWorkspaceDocuments((current) =>
-      upsertWorkspaceDocument(current, {
-        slug: selectedDoc.slug,
-        source: value,
-        model: parseMarcadoDocument(selectedDoc.slug, value),
-      })
+      upsertWorkspaceDocument(current, marcadoAdapter.handoff({ slug: selectedDoc.slug, source: value }))
     );
   };
 
@@ -230,11 +226,7 @@ export default function App() {
       currentSource.slice(endIndex);
 
     setWorkspaceDocuments((current) =>
-      upsertWorkspaceDocument(current, {
-        slug: selectedDoc.slug,
-        source: nextSource,
-        model: parseMarcadoDocument(selectedDoc.slug, nextSource),
-      })
+      upsertWorkspaceDocument(current, marcadoAdapter.handoff({ slug: selectedDoc.slug, source: nextSource }))
     );
     setSelectionState(null);
     window.getSelection()?.removeAllRanges();
@@ -244,7 +236,11 @@ export default function App() {
   const handleRefreshRuntime = async () => {
     if (!selectedDoc) return;
     const source = getWorkspaceSource(workspaceDocuments, selectedDoc.slug, selectedDoc.source);
-    const runtimeDoc = await parseSourceWithRuntimeFallback(selectedDoc.slug, source, selectedEntry?.filePath);
+    const runtimeDoc = await marcadoAdapter.refresh({
+      slug: selectedDoc.slug,
+      source,
+      filePath: selectedEntry?.filePath,
+    });
     setWorkspaceDocuments((current) =>
       upsertWorkspaceDocument(current, {
         slug: selectedDoc.slug,
@@ -309,11 +305,7 @@ export default function App() {
     }
 
     setWorkspaceDocuments((current) =>
-      upsertWorkspaceDocument(current, {
-        slug,
-        source: stored,
-        model: parseMarcadoDocument(slug, stored),
-      })
+      upsertWorkspaceDocument(current, marcadoAdapter.handoff({ slug, source: stored }))
     );
     setSelectedSlug(slug);
     setWorkspaceUi((current) => ({
@@ -342,11 +334,10 @@ export default function App() {
   const handleReset = () => {
     if (!selectedDoc || !selectedEntry) return;
     setWorkspaceDocuments((current) =>
-      upsertWorkspaceDocument(current, {
-        slug: selectedDoc.slug,
-        source: selectedEntry.initialSource,
-        model: parseMarcadoDocument(selectedDoc.slug, selectedEntry.initialSource),
-      })
+      upsertWorkspaceDocument(
+        current,
+        marcadoAdapter.handoff({ slug: selectedDoc.slug, source: selectedEntry.initialSource })
+      )
     );
     setNotice(`Reset ${selectedDoc.id} to original source`);
   };
@@ -370,7 +361,7 @@ export default function App() {
     if (!file) return;
     const text = await file.text();
     const slug = createWorkspaceSlug(file.name);
-    const model = await parseSourceWithRuntimeFallback(slug, text, file.name);
+    const interpretedDocument = await marcadoAdapter.interpret({ slug, source: text, filePath: file.name });
 
     activateWorkspaceEntry({
       entry: {
@@ -381,7 +372,7 @@ export default function App() {
         origin: "opened",
       },
       source: text,
-      model,
+      model: interpretedDocument.model,
       notice: `Opened ${file.name}`,
     });
     event.target.value = "";
@@ -401,7 +392,7 @@ export default function App() {
     const file = await fileHandle.getFile();
     const text = await file.text();
     const slug = createWorkspaceSlug(file.name);
-    const model = await parseSourceWithRuntimeFallback(slug, text, file.name);
+    const interpretedDocument = await marcadoAdapter.interpret({ slug, source: text, filePath: file.name });
 
     activateWorkspaceEntry({
       entry: {
@@ -412,7 +403,7 @@ export default function App() {
         origin: "opened",
       },
       source: text,
-      model,
+      model: interpretedDocument.model,
       fileHandle,
       notice: `Opened ${file.name}`,
     });
@@ -436,7 +427,9 @@ export default function App() {
       origin: "explored" as const,
     }));
     const nextModels = await Promise.all(
-      nextEntries.map((entry) => parseSourceWithRuntimeFallback(entry.slug, entry.initialSource, entry.filePath))
+      nextEntries.map((entry) =>
+        marcadoAdapter.interpret({ slug: entry.slug, source: entry.initialSource, filePath: entry.filePath })
+      )
     );
 
     setWorkspaceEntries((current) => {
@@ -450,7 +443,7 @@ export default function App() {
         nextEntries.map((entry, index) => ({
           slug: entry.slug,
           source: entry.initialSource,
-          model: nextModels[index],
+          model: nextModels[index].model,
           fileHandle: discovered[index]?.handle,
         }))
       )
@@ -473,7 +466,7 @@ export default function App() {
         origin: "opened",
       },
       source,
-      model: parseMarcadoDocument(slug, source),
+      model: marcadoAdapter.parse({ slug, source }),
       notice: `Created ${requestedPath}`,
     });
   };
@@ -494,7 +487,7 @@ export default function App() {
       renameWorkspaceDocument(current, selectedEntry.slug, {
         slug: nextSlug,
         source,
-        model: parseMarcadoDocument(nextSlug, source),
+        model: marcadoAdapter.parse({ slug: nextSlug, source }),
         fileHandle: current.fileHandles[selectedEntry.slug],
       })
     );
@@ -517,11 +510,7 @@ export default function App() {
       nextBody.slice(adjustedOpenEnd);
     const nextSource = currentSource.slice(0, selectedDoc.bodySourceStart) + finalBody;
     setWorkspaceDocuments((current) =>
-      upsertWorkspaceDocument(current, {
-        slug: selectedDoc.slug,
-        source: nextSource,
-        model: parseMarcadoDocument(selectedDoc.slug, nextSource),
-      })
+      upsertWorkspaceDocument(current, marcadoAdapter.handoff({ slug: selectedDoc.slug, source: nextSource }))
     );
     setNotice(`Deleted marker ${marker.key}`);
   };
@@ -544,11 +533,7 @@ export default function App() {
       body.slice(marker.closeMarkerEnd);
     const nextSource = currentSource.slice(0, selectedDoc.bodySourceStart) + nextBody;
     setWorkspaceDocuments((current) =>
-      upsertWorkspaceDocument(current, {
-        slug: selectedDoc.slug,
-        source: nextSource,
-        model: parseMarcadoDocument(selectedDoc.slug, nextSource),
-      })
+      upsertWorkspaceDocument(current, marcadoAdapter.handoff({ slug: selectedDoc.slug, source: nextSource }))
     );
     setNotice(`Renamed marker to ${nextKey}`);
   };

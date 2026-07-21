@@ -1,4 +1,5 @@
-import { parseMarcadoDocument, type MarcadoDocument } from "./marcado";
+import { marcadoAdapter, type MarcadoAdapter } from "./marcado-adapter";
+import type { MarcadoDocument } from "./marcado";
 
 export const STORAGE_PREFIX = "marcado-ui:source:";
 
@@ -49,7 +50,8 @@ export function createInitialWorkspaceEntries(initialDocuments: MarcadoDocument[
 
 export function createInitialWorkspaceDocumentStore(
   initialDocuments: MarcadoDocument[],
-  readStored: (slug: string) => string
+  readStored: (slug: string) => string,
+  adapter: MarcadoAdapter = marcadoAdapter
 ): WorkspaceDocumentStore {
   const sources = Object.fromEntries(
     initialDocuments.map((doc) => [doc.slug, readStored(doc.slug) || doc.source])
@@ -57,7 +59,7 @@ export function createInitialWorkspaceDocumentStore(
   const models = Object.fromEntries(
     initialDocuments.map((doc) => {
       const source = sources[doc.slug];
-      return [doc.slug, source === doc.source ? doc : parseMarcadoDocument(doc.slug, source)] as const;
+      return [doc.slug, source === doc.source ? doc : adapter.handoff({ slug: doc.slug, source }).model] as const;
     })
   );
 
@@ -88,9 +90,10 @@ export function getWorkspaceSource(
 export function resolveWorkspaceModel(
   store: WorkspaceDocumentStore,
   slug: string,
-  fallbackSource: string
+  fallbackSource: string,
+  adapter: MarcadoAdapter = marcadoAdapter
 ): MarcadoDocument {
-  return store.models[slug] ?? parseMarcadoDocument(slug, getWorkspaceSource(store, slug, fallbackSource));
+  return store.models[slug] ?? adapter.handoff({ slug, source: getWorkspaceSource(store, slug, fallbackSource) }).model;
 }
 
 export function upsertWorkspaceEntry(current: WorkspaceEntry[], entry: WorkspaceEntry): WorkspaceEntry[] {
@@ -103,7 +106,8 @@ export function upsertWorkspaceEntry(current: WorkspaceEntry[], entry: Workspace
 
 export function upsertWorkspaceDocument(
   current: WorkspaceDocumentStore,
-  registration: WorkspaceDocumentRegistration
+  registration: WorkspaceDocumentRegistration,
+  adapter: MarcadoAdapter = marcadoAdapter
 ): WorkspaceDocumentStore {
   return {
     sources: {
@@ -112,7 +116,7 @@ export function upsertWorkspaceDocument(
     },
     models: {
       ...current.models,
-      [registration.slug]: registration.model ?? parseMarcadoDocument(registration.slug, registration.source),
+      [registration.slug]: adapter.handoff(registration).model,
     },
     fileHandles: registration.fileHandle
       ? {
@@ -125,17 +129,19 @@ export function upsertWorkspaceDocument(
 
 export function upsertWorkspaceDocuments(
   current: WorkspaceDocumentStore,
-  registrations: WorkspaceDocumentRegistration[]
+  registrations: WorkspaceDocumentRegistration[],
+  adapter: MarcadoAdapter = marcadoAdapter
 ): WorkspaceDocumentStore {
-  return registrations.reduce((next, registration) => upsertWorkspaceDocument(next, registration), current);
+  return registrations.reduce((next, registration) => upsertWorkspaceDocument(next, registration, adapter), current);
 }
 
 export function renameWorkspaceDocument(
   current: WorkspaceDocumentStore,
   fromSlug: string,
-  registration: WorkspaceDocumentRegistration
+  registration: WorkspaceDocumentRegistration,
+  adapter: MarcadoAdapter = marcadoAdapter
 ): WorkspaceDocumentStore {
-  const next = upsertWorkspaceDocument(current, registration);
+  const next = upsertWorkspaceDocument(current, registration, adapter);
   const sources = { ...next.sources };
   const models = { ...next.models };
   const fileHandles = { ...next.fileHandles };
