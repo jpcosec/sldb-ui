@@ -9,16 +9,13 @@ describe('App Integration — @sldb/ui workspace flows with Marcado support', ()
     vi.restoreAllMocks();
   });
 
-  it('loads the canonical example on startup and renders its metadata', () => {
+  it('loads the canonical example in the default Marcado workspace', () => {
     render(<App />);
 
     expect(screen.getByRole('heading', { name: /semantic markdown asg — canonical example/i })).toBeInTheDocument();
-    expect(screen.getAllByText('canonical-example').length).toBeGreaterThan(0);
-    expect(screen.getByText('design_note')).toBeInTheDocument();
+    expect(screen.getAllByText(/Marcado workspace/i).length).toBeGreaterThan(0);
     expect(screen.getByText('struct:intro')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /sldb validation/i })).toBeInTheDocument();
-    expect(screen.getByText(/design_note contract/i)).toBeInTheDocument();
-    expect(screen.getByText(/^ready$/i)).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /sldb validation/i })).not.toBeInTheDocument();
   });
 
   it('switches between rendered and source views', async () => {
@@ -33,13 +30,16 @@ describe('App Integration — @sldb/ui workspace flows with Marcado support', ()
     expect(screen.getAllByText(/pure trees cannot represent crossing semantic ranges cleanly/i).length).toBeGreaterThan(0);
   });
 
-  it('exposes an explicit SLDB validation affordance from the toolbar', async () => {
+  it('moves SLDB validation into a separate context surface', async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByRole('button', { name: /check sldb validation/i }));
+    await user.click(screen.getByRole('button', { name: /open sldb context/i }));
 
-    expect(screen.getByText(/sldb validation seam found no local structural blockers for canonical-example/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/SLDB context/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: /sldb validation/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /check sldb validation/i }));
+    expect(screen.getByText(/sldb validation found no local structural blockers for canonical-example/i)).toBeInTheDocument();
   });
 
   it('creates a new workspace file and preserves edits after rename', async () => {
@@ -148,7 +148,7 @@ describe('App Integration — @sldb/ui workspace flows with Marcado support', ()
     await user.click(screen.getByRole('button', { name: /refresh runtime/i }));
 
     expect(screen.getByText(/marcado runtime unavailable; refreshed canonical-example with degraded fallback parsing/i)).toBeInTheDocument();
-    expect(screen.getByText(/fallback parsing \(degraded\)/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/fallback parsing/i).length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: /semantic markdown asg — canonical example/i })).toBeInTheDocument();
   });
 

@@ -10,7 +10,8 @@ test.describe('@sldb/ui browser flows', () => {
 
     await expect(page.getByText('@sldb/ui')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Semantic Markdown ASG — Canonical Example' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'SLDB validation' })).toBeVisible();
+    await expect(page.getByRole('main').getByText('Marcado workspace', { exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'SLDB validation' })).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Source' }).click();
     const editor = page.getByLabel('Marcado source editor');
@@ -22,7 +23,11 @@ test.describe('@sldb/ui browser flows', () => {
 
     await page.getByRole('button', { name: 'Refresh runtime' }).click();
     await expect(page.getByText(/Marcado runtime unavailable; refreshed canonical-example with degraded fallback parsing/i)).toBeVisible();
-    await expect(page.getByText('Fallback parsing (degraded)')).toBeVisible();
+    await expect(page.getByText('Fallback parsing', { exact: true })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Open SLDB context' }).click();
+    await expect(page.getByRole('main').getByText('SLDB context', { exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'SLDB validation' })).toBeVisible();
   });
 
   test('saves and restores a local draft in a real browser session', async ({ page }) => {
@@ -42,5 +47,8 @@ test.describe('@sldb/ui browser flows', () => {
 
     await page.getByRole('button', { name: 'Load draft' }).click();
     await expect(editor).toHaveValue('# Browser Draft\n\nBody from Playwright');
+
+    await page.getByRole('button', { name: 'Open SLDB context' }).click();
+    await expect(page.getByRole('main').getByText('SLDB context', { exact: true })).toBeVisible();
   });
 });

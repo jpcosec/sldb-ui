@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { FiBookOpen, FiEdit2, FiFileText, FiFolder, FiPlus, FiSave, FiUpload } from "react-icons/fi";
-import { DocumentWorkspace, type DocumentInterpretationMode } from "./components/document-workspace";
+import { DocumentWorkspace, type DocumentInterpretationMode, type WorkspaceSurface } from "./components/document-workspace";
 import { WorkspaceNavigator } from "./components/workspace-navigator";
 import { WorkspaceMain, WorkspaceShell, WorkspaceSidebar, WorkspaceSidebarHeader } from "./components/workspace-shell";
 import { loadDocuments } from "./data/documents";
@@ -46,6 +46,7 @@ export default function App() {
     )
   );
   const [workspaceUi, setWorkspaceUi] = useState<WorkspaceUiState>(() => createInitialWorkspaceUiState());
+  const [workspaceSurface, setWorkspaceSurface] = useState<WorkspaceSurface>("marcado");
 
   const { viewMode, notice, selectionState, markerFilter } = workspaceUi;
 
@@ -256,10 +257,11 @@ export default function App() {
   const handleCheckSldbValidation = () => {
     if (!selectedDoc || !selectedValidationSummary) return;
 
+    setWorkspaceSurface("sldb");
     setNotice(
       selectedValidationSummary.state === "ready"
-        ? `SLDB validation seam found no local structural blockers for ${selectedDoc.id}`
-        : `SLDB validation seam found ${selectedValidationSummary.blockingIssues.length} structural blocker(s) for ${selectedDoc.id}`
+        ? `SLDB validation found no local structural blockers for ${selectedDoc.id}`
+        : `SLDB validation found ${selectedValidationSummary.blockingIssues.length} structural blocker(s) for ${selectedDoc.id}`
     );
   };
 
@@ -595,15 +597,40 @@ export default function App() {
           <WorkspaceSidebarHeader
             eyebrow="@sldb/ui"
             title="Open a structured Markdown document"
-            description="Start with a local file, upload Markdown into this session, open a sample document, or resume a saved draft. This workspace is the human entry surface for @sldb/ documents with first-class Marcado support."
+            description="Use Marcado for writing and rendering. Open the separate SLDB context only when you need contract or validation information."
           />
 
           <div className="p-4 space-y-5">
             <section className="space-y-3">
               <div>
+                <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted">Choose the purpose</h2>
+                <p className="mt-2 text-sm text-muted leading-6">
+                  Keep writing and structure inspection in the Marcado workspace. Switch to SLDB context only for validation-oriented checks.
+                </p>
+              </div>
+              <div className="grid gap-3">
+                <PurposeCard
+                  title="Marcado workspace"
+                  description="Read, render, edit, and save the Markdown document without mixing in SLDB workflow detail."
+                  badge="default"
+                  active={workspaceSurface === "marcado"}
+                  onClick={() => setWorkspaceSurface("marcado")}
+                />
+                <PurposeCard
+                  title="SLDB context"
+                  description="Check contract readiness, advisories, and document context in a separate surface."
+                  badge="secondary"
+                  active={workspaceSurface === "sldb"}
+                  onClick={() => setWorkspaceSurface("sldb")}
+                />
+              </div>
+            </section>
+
+            <section className="space-y-3">
+              <div>
                 <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted">Start here</h2>
                 <p className="mt-2 text-sm text-muted leading-6">
-                  Pick the fastest path into the workspace. The current document tools stay available below once you are inside.
+                  Pick the fastest path into the document. Once open, the Marcado workspace stays focused on reading and editing.
                 </p>
               </div>
               <div className="space-y-3">
@@ -649,32 +676,26 @@ export default function App() {
               </div>
             </section>
 
-            <section className="space-y-3">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted">Sample documents</h2>
-                <span className="text-xs text-muted">{sampleDocuments.length} available</span>
-              </div>
-              <div className="space-y-2">
-                {sampleDocuments.map((sample) => (
-                  <EntryActionCard
-                    key={sample.slug}
-                    icon={<FiFileText />}
-                    title={sample.title}
-                    description={sample.description}
-                    badge={sample.slug === selectedSlug ? "current" : "sample"}
-                    ariaLabel={`Open sample ${sample.title}`}
-                    onClick={() => handleOpenSample(sample.slug)}
-                  />
-                ))}
-              </div>
-            </section>
+            {sampleDocuments.length > 1 ? (
+              <CompactSection title="More sample documents" meta={`${sampleDocuments.length} available`}>
+                <div className="space-y-2">
+                  {sampleDocuments.map((sample) => (
+                    <EntryActionCard
+                      key={sample.slug}
+                      icon={<FiFileText />}
+                      title={sample.title}
+                      description={sample.description}
+                      badge={sample.slug === selectedSlug ? "current" : "sample"}
+                      ariaLabel={`Open sample ${sample.title}`}
+                      onClick={() => handleOpenSample(sample.slug)}
+                    />
+                  ))}
+                </div>
+              </CompactSection>
+            ) : null}
 
             {draftEntries.length > 0 ? (
-              <section className="space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted">Saved drafts</h2>
-                  <span className="text-xs text-muted">{draftEntries.length} ready to resume</span>
-                </div>
+              <CompactSection title="Saved drafts" meta={`${draftEntries.length} ready to resume`}>
                 <div className="space-y-2">
                   {draftEntries.map((entry) => (
                     <EntryActionCard
@@ -688,7 +709,7 @@ export default function App() {
                     />
                   ))}
                 </div>
-              </section>
+              </CompactSection>
             ) : null}
 
             <WorkspaceNavigator
@@ -717,11 +738,13 @@ export default function App() {
               fileLabel={selectedEntry?.filePath ?? selectedEntry?.fileName ?? null}
               interpretationMode={selectedDocumentMode}
               validationSummary={selectedValidationSummary}
+              workspaceSurface={workspaceSurface}
               selectionState={selectionState}
               canUseNativeFiles={canUseNativeFiles}
               markerFilter={markerFilter}
               visibleMarkers={visibleMarkers}
               onChangeViewMode={setViewMode}
+              onChangeWorkspaceSurface={setWorkspaceSurface}
               onSourceChange={handleSourceChange}
               onSelectRange={setSelectionState}
               onClearSelection={() => setSelectionState(null)}
@@ -761,6 +784,52 @@ function ActionButton({ onClick, icon, label }: { onClick: () => void; icon: Rea
       {icon}
       {label}
     </button>
+  );
+}
+
+function PurposeCard({
+  title,
+  description,
+  badge,
+  active,
+  onClick,
+}: {
+  title: string;
+  description: string;
+  badge: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      className={`w-full rounded-2xl border p-4 text-left transition ${
+        active ? "border-primary/40 bg-primary/10" : "border-border bg-background hover:border-primary/30 hover:bg-surface-hover"
+      }`}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold text-foreground">{title}</div>
+          <p className="mt-2 text-sm leading-6 text-muted">{description}</p>
+        </div>
+        <span className="rounded-full border border-border px-2 py-0.5 text-[11px] uppercase tracking-wide text-muted">{badge}</span>
+      </div>
+    </button>
+  );
+}
+
+function CompactSection({ title, meta, children }: { title: string; meta?: string; children: ReactNode }) {
+  return (
+    <details className="rounded-2xl border border-border bg-background p-3">
+      <summary className="cursor-pointer list-none">
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-sm font-semibold text-foreground">{title}</div>
+          {meta ? <span className="text-xs text-muted">{meta}</span> : null}
+        </div>
+      </summary>
+      <div className="mt-3 space-y-2">{children}</div>
+    </details>
   );
 }
 

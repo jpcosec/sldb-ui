@@ -96,12 +96,8 @@ function FileTreeNodeView({
           <div className="mt-1 truncate text-xs text-muted">{node.path}</div>
         </div>
         <span className="rounded-full border border-border px-2 py-0.5 text-[11px] uppercase tracking-wide text-muted">
-          {node.origin}
+          {selected ? "current" : node.origin}
         </span>
-      </div>
-      <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted">
-        <span className="rounded-full border border-border bg-surface px-2 py-1">{node.markers} markers</span>
-        <span className="rounded-full border border-border bg-surface px-2 py-1">{node.namespaces} namespaces</span>
       </div>
     </button>
   );

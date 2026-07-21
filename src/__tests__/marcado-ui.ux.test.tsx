@@ -45,7 +45,8 @@ describe('Marcado UI UX flow', () => {
     expect(screen.queryByText('#sem:concept.semantic_markdown')).not.toBeInTheDocument();
   });
 
-  it('shows extracted marcado metadata, namespaces, edges, and marker anchors', () => {
+  it('shows extracted marcado metadata, namespaces, edges, and marker anchors', async () => {
+    const user = userEvent.setup();
     render(<App />);
 
     expect(screen.getAllByText('canonical-example').length).toBeGreaterThan(0);
@@ -55,10 +56,9 @@ describe('Marcado UI UX flow', () => {
     expect(screen.getAllByText('sem').length).toBeGreaterThan(0);
     expect(screen.getAllByText('rhet').length).toBeGreaterThan(0);
 
-    expect(screen.getByText('rhet:justifies')).toBeInTheDocument();
-    expect(
-      screen.getByText('#rhet:rationale.tree_overlap_limitation')
-    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /open sldb context/i }));
+    expect(screen.getByText('Why this is separate')).toBeInTheDocument();
+    expect(screen.getByText('#rhet:rationale.tree_overlap_limitation')).toBeInTheDocument();
     expect(screen.getByText('#rhet:decision.use_asg')).toBeInTheDocument();
   });
 
