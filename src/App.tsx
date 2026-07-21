@@ -47,6 +47,8 @@ import {
 
 const initialDocuments = loadDocuments();
 
+type DocumentInterpretationMode = "runtime" | "fallback" | "local";
+
 type FileTreeNode =
   | { kind: "folder"; name: string; path: string; children: FileTreeNode[] }
   | {
@@ -67,6 +69,11 @@ export default function App() {
   const [selectedSlug, setSelectedSlug] = useState(initialDocuments[0]?.slug ?? "");
   const [workspaceDocuments, setWorkspaceDocuments] = useState<WorkspaceDocumentStore>(() =>
     createInitialWorkspaceDocumentStore(initialDocuments, readStoredSource)
+  );
+  const [documentModes, setDocumentModes] = useState<Record<string, DocumentInterpretationMode>>(() =>
+    Object.fromEntries(
+      initialDocuments.map((doc) => [doc.slug, readStoredSource(doc.slug) ? "local" : "runtime"] as const)
+    )
   );
   const [workspaceUi, setWorkspaceUi] = useState<WorkspaceUiState>(() => createInitialWorkspaceUiState());
 
@@ -101,6 +108,7 @@ export default function App() {
     fileHandle,
     viewMode: nextViewMode = "source",
     notice: nextNotice,
+    interpretationMode = "local",
   }: {
     entry: WorkspaceEntry;
     source: string;
@@ -108,6 +116,7 @@ export default function App() {
     fileHandle?: FileSystemFileHandle;
     viewMode?: ViewMode;
     notice: string;
+    interpretationMode?: DocumentInterpretationMode;
   }) => {
     setWorkspaceEntries((current) => upsertWorkspaceEntry(current, entry));
     setWorkspaceDocuments((current) =>
@@ -119,6 +128,7 @@ export default function App() {
       })
     );
     setSelectedSlug(entry.slug);
+    setDocumentModes((current) => ({ ...current, [entry.slug]: interpretationMode }));
     setWorkspaceUi((current) => ({
       ...current,
       viewMode: nextViewMode,
@@ -181,11 +191,14 @@ export default function App() {
     return selectedDoc.markers.filter((marker) => markerFilter.includes(marker.namespace));
   }, [selectedDoc, markerFilter]);
 
+  const selectedDocumentMode = selectedDoc ? (documentModes[selectedDoc.slug] ?? "local") : "local";
+
   const handleSourceChange = (value: string) => {
     if (!selectedDoc) return;
     setWorkspaceDocuments((current) =>
       upsertWorkspaceDocument(current, marcadoAdapter.handoff({ slug: selectedDoc.slug, source: value }))
     );
+    setDocumentModes((current) => ({ ...current, [selectedDoc.slug]: "local" }));
   };
 
   const handleAddMarker = (namespace: string, classification: string) => {
@@ -228,6 +241,7 @@ export default function App() {
     setWorkspaceDocuments((current) =>
       upsertWorkspaceDocument(current, marcadoAdapter.handoff({ slug: selectedDoc.slug, source: nextSource }))
     );
+    setDocumentModes((current) => ({ ...current, [selectedDoc.slug]: "local" }));
     setSelectionState(null);
     window.getSelection()?.removeAllRanges();
     setNotice(`Added marker ${key}`);
@@ -245,10 +259,15 @@ export default function App() {
       upsertWorkspaceDocument(current, {
         slug: selectedDoc.slug,
         source,
-        model: runtimeDoc,
+        model: runtimeDoc.model,
       })
     );
-    setNotice(`Refreshed ${selectedDoc.id} from Marcado runtime`);
+    setDocumentModes((current) => ({ ...current, [selectedDoc.slug]: runtimeDoc.mode }));
+    setNotice(
+      runtimeDoc.mode === "runtime"
+        ? `Refreshed ${selectedDoc.id} from Marcado runtime`
+        : `Marcado runtime unavailable; refreshed ${selectedDoc.id} with degraded fallback parsing`
+    );
   };
 
   const handleSaveDraft = () => {
@@ -307,6 +326,7 @@ export default function App() {
     setWorkspaceDocuments((current) =>
       upsertWorkspaceDocument(current, marcadoAdapter.handoff({ slug, source: stored }))
     );
+    setDocumentModes((current) => ({ ...current, [slug]: "local" }));
     setSelectedSlug(slug);
     setWorkspaceUi((current) => ({
       ...current,
@@ -339,6 +359,7 @@ export default function App() {
         marcadoAdapter.handoff({ slug: selectedDoc.slug, source: selectedEntry.initialSource })
       )
     );
+    setDocumentModes((current) => ({ ...current, [selectedDoc.slug]: "local" }));
     setNotice(`Reset ${selectedDoc.id} to original source`);
   };
 
@@ -373,7 +394,11 @@ export default function App() {
       },
       source: text,
       model: interpretedDocument.model,
-      notice: `Opened ${file.name}`,
+      notice:
+        interpretedDocument.mode === "runtime"
+          ? `Opened ${file.name}`
+          : `Opened ${file.name} with degraded fallback parsing`,
+      interpretationMode: interpretedDocument.mode,
     });
     event.target.value = "";
   };
@@ -405,7 +430,11 @@ export default function App() {
       source: text,
       model: interpretedDocument.model,
       fileHandle,
-      notice: `Opened ${file.name}`,
+      notice:
+        interpretedDocument.mode === "runtime"
+          ? `Opened ${file.name}`
+          : `Opened ${file.name} with degraded fallback parsing`,
+      interpretationMode: interpretedDocument.mode,
     });
   };
 
@@ -448,8 +477,16 @@ export default function App() {
         }))
       )
     );
+    setDocumentModes((current) => ({
+      ...current,
+      ...Object.fromEntries(nextEntries.map((entry, index) => [entry.slug, nextModels[index]?.mode ?? "fallback"])),
+    }));
     setSelectedSlug(nextEntries[0].slug);
-    setNotice(`Loaded ${discovered.length} markdown file(s) from ${directoryHandle.name}`);
+    setNotice(
+      nextModels.some((result) => result.mode === "fallback")
+        ? `Loaded ${discovered.length} markdown file(s) from ${directoryHandle.name} with degraded fallback parsing where runtime export was unavailable`
+        : `Loaded ${discovered.length} markdown file(s) from ${directoryHandle.name}`
+    );
   };
 
   const handleCreateFile = () => {
@@ -468,6 +505,7 @@ export default function App() {
       source,
       model: marcadoAdapter.parse({ slug, source }),
       notice: `Created ${requestedPath}`,
+      interpretationMode: "local",
     });
   };
 
@@ -483,6 +521,11 @@ export default function App() {
         ? { ...entry, slug: nextSlug, fileName: nextPath.split("/").pop() || nextPath, filePath: nextPath }
         : entry
     ));
+    setDocumentModes((current) => {
+      const next = { ...current, [nextSlug]: current[selectedEntry.slug] ?? "local" };
+      delete next[selectedEntry.slug];
+      return next;
+    });
     setWorkspaceDocuments((current) =>
       renameWorkspaceDocument(current, selectedEntry.slug, {
         slug: nextSlug,
@@ -512,6 +555,7 @@ export default function App() {
     setWorkspaceDocuments((current) =>
       upsertWorkspaceDocument(current, marcadoAdapter.handoff({ slug: selectedDoc.slug, source: nextSource }))
     );
+    setDocumentModes((current) => ({ ...current, [selectedDoc.slug]: "local" }));
     setNotice(`Deleted marker ${marker.key}`);
   };
 
@@ -535,6 +579,7 @@ export default function App() {
     setWorkspaceDocuments((current) =>
       upsertWorkspaceDocument(current, marcadoAdapter.handoff({ slug: selectedDoc.slug, source: nextSource }))
     );
+    setDocumentModes((current) => ({ ...current, [selectedDoc.slug]: "local" }));
     setNotice(`Renamed marker to ${nextKey}`);
   };
 
@@ -686,6 +731,7 @@ export default function App() {
               viewMode={viewMode}
               notice={notice}
               fileLabel={selectedEntry?.filePath ?? selectedEntry?.fileName ?? null}
+              interpretationMode={selectedDocumentMode}
               selectionState={selectionState}
               canUseNativeFiles={canUseNativeFiles}
               markerFilter={markerFilter}
@@ -726,6 +772,7 @@ function DocumentWorkspace({
   viewMode,
   notice,
   fileLabel,
+  interpretationMode,
   selectionState,
   canUseNativeFiles,
   markerFilter,
@@ -754,6 +801,7 @@ function DocumentWorkspace({
   viewMode: ViewMode;
   notice: string;
   fileLabel: string | null;
+  interpretationMode: DocumentInterpretationMode;
   selectionState: SelectionState | null;
   canUseNativeFiles: boolean;
   markerFilter: string[];
@@ -825,9 +873,10 @@ function DocumentWorkspace({
                   Human entry surface for structured Markdown: open documents, compare rendered and source views,
                   inspect markers, and keep Markdown as the source of truth.
                 </p>
-                {fileLabel ? (
-                  <p className="text-xs text-muted/80 mt-2">{fileLabel}</p>
-                ) : null}
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {fileLabel ? <p className="text-xs text-muted/80">{fileLabel}</p> : null}
+                  <InterpretationModeBadge mode={interpretationMode} />
+                </div>
               </div>
 
               <div className="inline-flex rounded-xl border border-border bg-surface p-1 self-start lg:self-auto">
@@ -1092,6 +1141,25 @@ function ActionButton({ onClick, icon, label }: { onClick: () => void; icon: Rea
       {icon}
       {label}
     </button>
+  );
+}
+
+function InterpretationModeBadge({ mode }: { mode: DocumentInterpretationMode }) {
+  const tone = mode === "runtime"
+    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+    : mode === "fallback"
+      ? "border-amber-200 bg-amber-50 text-amber-700"
+      : "border-border bg-surface text-muted";
+  const label = mode === "runtime"
+    ? "Marcado runtime"
+    : mode === "fallback"
+      ? "Fallback parsing (degraded)"
+      : "Local parse";
+
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide ${tone}`}>
+      {label}
+    </span>
   );
 }
 

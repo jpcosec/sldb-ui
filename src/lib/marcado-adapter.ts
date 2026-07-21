@@ -1,5 +1,5 @@
 import { parseMarcadoDocument, type MarcadoDocument } from "./marcado";
-import { parseSourceWithRuntimeFallback } from "./marcado-runtime";
+import { refreshMarcadoDocument, type MarcadoRuntimeMode } from "./marcado-runtime";
 
 export type MarcadoAdapterInput = {
   slug: string;
@@ -9,11 +9,12 @@ export type MarcadoAdapterInput = {
 
 export type MarcadoInterpretedDocument = MarcadoAdapterInput & {
   model: MarcadoDocument;
+  mode: MarcadoRuntimeMode | "local";
 };
 
 export interface MarcadoAdapter {
   parse(input: MarcadoAdapterInput): MarcadoDocument;
-  refresh(input: MarcadoAdapterInput): Promise<MarcadoDocument>;
+  refresh(input: MarcadoAdapterInput): Promise<MarcadoInterpretedDocument>;
   interpret(input: MarcadoAdapterInput): Promise<MarcadoInterpretedDocument>;
   handoff(input: MarcadoAdapterInput & { model?: MarcadoDocument }): MarcadoInterpretedDocument;
 }
@@ -23,19 +24,24 @@ export const marcadoAdapter: MarcadoAdapter = {
     return parseMarcadoDocument(slug, source);
   },
   async refresh({ slug, source, filePath }) {
-    return parseSourceWithRuntimeFallback(slug, source, filePath);
+    const refreshed = await refreshMarcadoDocument(slug, source, filePath);
+    return {
+      slug,
+      source,
+      filePath,
+      mode: refreshed.mode,
+      model: refreshed.model,
+    };
   },
   async interpret(input) {
-    return {
-      ...input,
-      model: await this.refresh(input),
-    };
+    return this.refresh(input);
   },
   handoff({ slug, source, filePath, model }) {
     return {
       slug,
       source,
       filePath,
+      mode: "local",
       model: model ?? this.parse({ slug, source, filePath }),
     };
   },

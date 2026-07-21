@@ -1,5 +1,12 @@
 import { parseMarcadoDocument, type GraphEdge, type MarcadoDocument, type MarkerRange, type NamespaceInfo } from './marcado';
 
+export type MarcadoRuntimeMode = 'runtime' | 'fallback';
+
+export interface MarcadoRuntimeRefreshResult {
+  mode: MarcadoRuntimeMode;
+  model: MarcadoDocument;
+}
+
 export interface RuntimeExportMarkerToken {
   key: string;
   namespace: string;
@@ -60,16 +67,31 @@ export interface RuntimeExportDocument {
   };
 }
 
+export async function refreshMarcadoDocument(
+  slug: string,
+  source: string,
+  filePath?: string
+): Promise<MarcadoRuntimeRefreshResult> {
+  const runtimeExport = await requestRuntimeExport(source, filePath);
+  if (runtimeExport) {
+    return {
+      mode: 'runtime',
+      model: runtimeExportToDocument(slug, source, runtimeExport),
+    };
+  }
+
+  return {
+    mode: 'fallback',
+    model: parseMarcadoDocument(slug, source),
+  };
+}
+
 export async function parseSourceWithRuntimeFallback(
   slug: string,
   source: string,
   filePath?: string
 ): Promise<MarcadoDocument> {
-  const runtimeExport = await requestRuntimeExport(source, filePath);
-  if (runtimeExport) {
-    return runtimeExportToDocument(slug, source, runtimeExport);
-  }
-  return parseMarcadoDocument(slug, source);
+  return (await refreshMarcadoDocument(slug, source, filePath)).model;
 }
 
 export function runtimeExportToDocument(

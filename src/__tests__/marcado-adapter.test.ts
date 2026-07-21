@@ -14,6 +14,7 @@ describe("marcadoAdapter", () => {
 
     expect(parsed.title).toBe("Adapter Example");
     expect(handedOff.source).toBe(source);
+    expect(handedOff.mode).toBe("local");
     expect(handedOff.model.title).toBe("Adapter Example");
   });
 
@@ -52,7 +53,22 @@ describe("marcadoAdapter", () => {
       expect.objectContaining({ method: "POST" })
     );
     expect(interpreted.source).toContain("Local Title");
+    expect(interpreted.mode).toBe("runtime");
     expect(interpreted.model.title).toBe("Runtime Adapter Title");
     expect(interpreted.model.id).toBe("runtime-example");
+  });
+
+  it("falls back to the local parser when runtime export is unavailable", async () => {
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("runtime offline"));
+
+    const interpreted = await marcadoAdapter.refresh({
+      slug: "file:fallback.md",
+      source: "---\ndocument:\n  id: fallback-example\n  title: Fallback Title\n  type: note\n---\n\n# Fallback Title\n",
+      filePath: "fallback.md",
+    });
+
+    expect(interpreted.mode).toBe("fallback");
+    expect(interpreted.model.id).toBe("fallback-example");
+    expect(interpreted.model.title).toBe("Fallback Title");
   });
 });

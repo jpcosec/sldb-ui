@@ -125,6 +125,19 @@ describe('App Integration — Marcado workspace flows', () => {
     expect(fetchSpy).toHaveBeenCalledWith('/api/marcado/export', expect.objectContaining({ method: 'POST' }));
     expect(screen.getByRole('heading', { name: /runtime refreshed title/i })).toBeInTheDocument();
     expect(screen.getByText(/refreshed canonical-example from marcado runtime/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/marcado runtime/i).length).toBeGreaterThan(0);
+  });
+
+  it('makes degraded fallback refresh explicit when runtime export is unavailable', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('runtime offline'));
+
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: /refresh runtime/i }));
+
+    expect(screen.getByText(/marcado runtime unavailable; refreshed canonical-example with degraded fallback parsing/i)).toBeInTheDocument();
+    expect(screen.getByText(/fallback parsing \(degraded\)/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /semantic markdown asg — canonical example/i })).toBeInTheDocument();
   });
 
   it('handles localStorage read failures gracefully', () => {
