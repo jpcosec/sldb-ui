@@ -1,0 +1,1215 @@
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import {
+  FiBookOpen,
+  FiCode,
+  FiDownload,
+  FiEdit2,
+  FiFile,
+  FiFileText,
+  FiFolder,
+  FiGitBranch,
+  FiHash,
+  FiPlus,
+  FiRotateCcw,
+  FiSave,
+  FiTrash2,
+  FiUpload,
+  FiX,
+} from "react-icons/fi";
+import { loadDocuments } from "./data/documents";
+import { parseMarcadoDocument, type MarcadoDocument, type MarkerRange } from "./lib/marcado";
+import { parseSourceWithRuntimeFallback } from "./lib/marcado-runtime";
+
+const initialDocuments = loadDocuments();
+const STORAGE_PREFIX = "marcado-ui:source:";
+
+type ViewMode = "rendered" | "source";
+
+type WorkspaceEntry = {
+  slug: string;
+  initialSource: string;
+  fileName?: string;
+  filePath?: string;
+  origin: "bundled" | "opened" | "explored";
+};
+
+type SelectionState = {
+  start: number;
+  end: number;
+  text: string;
+};
+
+type FileTreeNode =
+  | { kind: "folder"; name: string; path: string; children: FileTreeNode[] }
+  | {
+      kind: "file";
+      name: string;
+      path: string;
+      slug: string;
+      title: string;
+      origin: WorkspaceEntry["origin"];
+      markers: number;
+      namespaces: number;
+    };
+
+export default function App() {
+  const [workspaceEntries, setWorkspaceEntries] = useState<WorkspaceEntry[]>(() =>
+    initialDocuments.map((doc) => ({
+      slug: doc.slug,
+      initialSource: doc.source,
+      origin: "bundled",
+    }))
+  );
+  const [selectedSlug, setSelectedSlug] = useState(initialDocuments[0]?.slug ?? "");
+  const [docSources, setDocSources] = useState<Record<string, string>>(() => {
+    const entries = initialDocuments.map((doc) => [doc.slug, readStoredSource(doc.slug) || doc.source]);
+    return Object.fromEntries(entries);
+  });
+  const [docModels, setDocModels] = useState<Record<string, MarcadoDocument>>(() => {
+    const entries = initialDocuments.map((doc) => {
+      const storedSource = readStoredSource(doc.slug);
+      return [doc.slug, storedSource ? parseMarcadoDocument(doc.slug, storedSource) : doc] as const;
+    });
+    return Object.fromEntries(entries);
+  });
+  const [fileHandles, setFileHandles] = useState<Record<string, FileSystemFileHandle>>({});
+  const [viewMode, setViewMode] = useState<ViewMode>("rendered");
+  const [notice, setNotice] = useState<string>("");
+  const [selectionState, setSelectionState] = useState<SelectionState | null>(null);
+  const [markerFilter, setMarkerFilter] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!selectedSlug && initialDocuments[0]) {
+      setSelectedSlug(initialDocuments[0].slug);
+    }
+  }, [selectedSlug]);
+
+  const documents = useMemo(
+    () =>
+      workspaceEntries.map(
+        (entry) => docModels[entry.slug] ?? parseMarcadoDocument(entry.slug, docSources[entry.slug] ?? entry.initialSource)
+      ),
+    [docModels, docSources, workspaceEntries]
+  );
+
+  const selectedDoc = useMemo(
+    () => documents.find((doc) => doc.slug === selectedSlug) ?? null,
+    [documents, selectedSlug]
+  );
+
+  const selectedEntry = useMemo(
+    () => workspaceEntries.find((entry) => entry.slug === selectedSlug) ?? null,
+    [workspaceEntries, selectedSlug]
+  );
+
+  const visibleMarkers = useMemo(() => {
+    if (!selectedDoc) return [];
+    if (markerFilter.length === 0) return selectedDoc.markers;
+    return selectedDoc.markers.filter((marker) => markerFilter.includes(marker.namespace));
+  }, [selectedDoc, markerFilter]);
+
+  const handleSourceChange = (value: string) => {
+    if (!selectedDoc) return;
+    setDocSources((current) => ({ ...current, [selectedDoc.slug]: value }));
+    setDocModels((current) => ({ ...current, [selectedDoc.slug]: parseMarcadoDocument(selectedDoc.slug, value) }));
+  };
+
+  const handleAddMarker = (namespace: string, classification: string) => {
+    if (!selectedDoc || !selectionState) return;
+
+    const normalizedNamespace = namespace.trim();
+    const normalizedClassification = classification.trim();
+    if (!normalizedNamespace || !normalizedClassification) {
+      setNotice("Namespace and classification are required");
+      return;
+    }
+
+    const key = `${normalizedNamespace}:${normalizedClassification}`;
+    const sourceMap = selectedDoc.plainToSourceMap;
+    const exactMatches = findAllOccurrences(selectedDoc.plainBody, selectionState.text);
+
+    const plainStart = exactMatches.length === 1 ? exactMatches[0] : selectionState.start;
+    const plainEnd = exactMatches.length === 1 ? plainStart + selectionState.text.length : selectionState.end;
+
+    const startInBody = sourceMap[plainStart];
+    const endInBody = sourceMap[plainEnd];
+
+    if (startInBody == null || endInBody == null) {
+      setNotice("Could not resolve selection back into source");
+      return;
+    }
+
+    const startIndex = selectedDoc.bodySourceStart + startInBody;
+    const endIndex = selectedDoc.bodySourceStart + endInBody;
+    const currentSource = docSources[selectedDoc.slug] ?? selectedDoc.source;
+    const openMarker = `<!-- ${key} -->`;
+    const closeMarker = `<!-- /${key} -->`;
+    const nextSource =
+      currentSource.slice(0, startIndex) +
+      openMarker +
+      currentSource.slice(startIndex, endIndex) +
+      closeMarker +
+      currentSource.slice(endIndex);
+
+    setDocSources((current) => ({ ...current, [selectedDoc.slug]: nextSource }));
+    setDocModels((current) => ({ ...current, [selectedDoc.slug]: parseMarcadoDocument(selectedDoc.slug, nextSource) }));
+    setSelectionState(null);
+    window.getSelection()?.removeAllRanges();
+    setNotice(`Added marker ${key}`);
+  };
+
+  const handleRefreshRuntime = async () => {
+    if (!selectedDoc) return;
+    const source = docSources[selectedDoc.slug] ?? selectedDoc.source;
+    const runtimeDoc = await parseSourceWithRuntimeFallback(selectedDoc.slug, source, selectedEntry?.filePath);
+    setDocModels((current) => ({ ...current, [selectedDoc.slug]: runtimeDoc }));
+    setNotice(`Refreshed ${selectedDoc.id} from Marcado runtime`);
+  };
+
+  const handleSaveDraft = () => {
+    if (!selectedDoc) return;
+    localStorage.setItem(`${STORAGE_PREFIX}${selectedDoc.slug}`, docSources[selectedDoc.slug] ?? selectedDoc.source);
+    setNotice(`Saved draft for ${selectedDoc.id}`);
+  };
+
+  const handleSaveFile = async () => {
+    if (!selectedDoc) return;
+
+    let fileHandle = fileHandles[selectedDoc.slug];
+    if (!fileHandle && typeof window !== "undefined" && window.showSaveFilePicker) {
+      fileHandle = await window.showSaveFilePicker({
+        suggestedName: selectedEntry?.fileName || `${selectedDoc.slug.replace(/^file:/, "")}.md`,
+        types: [{
+          description: "Markdown files",
+          accept: { "text/markdown": [".md"], "text/plain": [".md", ".txt"] },
+        }],
+      });
+      setFileHandles((current) => ({ ...current, [selectedDoc.slug]: fileHandle! }));
+    }
+
+    if (!fileHandle) {
+      handleDownload();
+      setNotice(`No file handle for ${selectedDoc.id}; downloaded instead`);
+      return;
+    }
+
+    const writable = await fileHandle.createWritable();
+    await writable.write(docSources[selectedDoc.slug] ?? selectedDoc.source);
+    await writable.close();
+    setNotice(`Saved file ${fileHandle.name}`);
+  };
+
+  const handleLoad = () => {
+    if (!selectedDoc || !selectedEntry) return;
+    const stored = readStoredSource(selectedDoc.slug);
+    if (!stored) {
+      setNotice(`No saved draft found for ${selectedDoc.id}`);
+      return;
+    }
+    setDocSources((current) => ({ ...current, [selectedDoc.slug]: stored }));
+    setDocModels((current) => ({ ...current, [selectedDoc.slug]: parseMarcadoDocument(selectedDoc.slug, stored) }));
+    setNotice(`Loaded saved draft for ${selectedDoc.id}`);
+  };
+
+  const handleReset = () => {
+    if (!selectedDoc || !selectedEntry) return;
+    setDocSources((current) => ({ ...current, [selectedDoc.slug]: selectedEntry.initialSource }));
+    setDocModels((current) => ({ ...current, [selectedDoc.slug]: parseMarcadoDocument(selectedDoc.slug, selectedEntry.initialSource) }));
+    setNotice(`Reset ${selectedDoc.id} to original source`);
+  };
+
+  const handleDownload = () => {
+    if (!selectedDoc) return;
+    const blob = new Blob([docSources[selectedDoc.slug] ?? selectedDoc.source], {
+      type: "text/markdown;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${selectedDoc.slug}.md`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setNotice(`Downloaded ${selectedDoc.slug}.md`);
+  };
+
+  const handleUpload: React.ChangeEventHandler<HTMLInputElement> = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const text = await file.text();
+    const slug = createWorkspaceSlug(file.name);
+    const model = await parseSourceWithRuntimeFallback(slug, text, file.name);
+
+    setWorkspaceEntries((current) => upsertWorkspaceEntry(current, {
+      slug,
+      initialSource: text,
+      fileName: file.name,
+      filePath: file.name,
+      origin: "opened",
+    }));
+    setDocSources((current) => ({ ...current, [slug]: text }));
+    setDocModels((current) => ({ ...current, [slug]: model }));
+    setSelectedSlug(slug);
+    setViewMode("source");
+    setNotice(`Opened ${file.name}`);
+    event.target.value = "";
+  };
+
+  const handleOpenFile = async () => {
+    if (!supportsFileSystemAccess()) return;
+    const [fileHandle] = await window.showOpenFilePicker({
+      multiple: false,
+      types: [{
+        description: "Markdown files",
+        accept: { "text/markdown": [".md"], "text/plain": [".md", ".txt"] },
+      }],
+    });
+
+    if (!fileHandle) return;
+    const file = await fileHandle.getFile();
+    const text = await file.text();
+    const slug = createWorkspaceSlug(file.name);
+    const model = await parseSourceWithRuntimeFallback(slug, text, file.name);
+
+    setWorkspaceEntries((current) => upsertWorkspaceEntry(current, {
+      slug,
+      initialSource: text,
+      fileName: file.name,
+      filePath: file.name,
+      origin: "opened",
+    }));
+    setDocSources((current) => ({ ...current, [slug]: text }));
+    setDocModels((current) => ({ ...current, [slug]: model }));
+    setFileHandles((current) => ({ ...current, [slug]: fileHandle }));
+    setSelectedSlug(slug);
+    setViewMode("source");
+    setNotice(`Opened ${file.name}`);
+  };
+
+  const handleExploreFiles = async () => {
+    if (!supportsFileSystemAccess()) return;
+    const directoryHandle = await window.showDirectoryPicker();
+    const discovered = await collectMarkdownFiles(directoryHandle);
+
+    if (discovered.length === 0) {
+      setNotice(`No markdown files found in ${directoryHandle.name}`);
+      return;
+    }
+
+    const nextEntries = discovered.map(({ path, handle, source }) => ({
+      slug: createWorkspaceSlug(path),
+      initialSource: source,
+      fileName: handle.name,
+      filePath: path,
+      origin: "explored" as const,
+    }));
+    const nextModels = await Promise.all(
+      nextEntries.map((entry) => parseSourceWithRuntimeFallback(entry.slug, entry.initialSource, entry.filePath))
+    );
+
+    setWorkspaceEntries((current) => {
+      let updated = current;
+      for (const entry of nextEntries) updated = upsertWorkspaceEntry(updated, entry);
+      return updated;
+    });
+    setDocSources((current) => {
+      const next = { ...current };
+      for (const entry of nextEntries) next[entry.slug] = entry.initialSource;
+      return next;
+    });
+    setDocModels((current) => {
+      const next = { ...current };
+      for (const model of nextModels) next[model.slug] = model;
+      return next;
+    });
+    setFileHandles((current) => {
+      const next = { ...current };
+      for (const file of discovered) next[createWorkspaceSlug(file.path)] = file.handle;
+      return next;
+    });
+    setSelectedSlug(nextEntries[0].slug);
+    setNotice(`Loaded ${discovered.length} markdown file(s) from ${directoryHandle.name}`);
+  };
+
+  const handleCreateFile = () => {
+    const requestedPath = window.prompt("New markdown file path", "drafts/new-document.md");
+    if (!requestedPath) return;
+    const slug = createWorkspaceSlug(requestedPath);
+    const source = `---\ndocument:\n  id: ${basenameWithoutExtension(requestedPath)}\n  type: note\n  title: ${basenameWithoutExtension(requestedPath)}\n---\n\n# ${basenameWithoutExtension(requestedPath)}\n`;
+    setWorkspaceEntries((current) => upsertWorkspaceEntry(current, {
+      slug,
+      initialSource: source,
+      fileName: requestedPath.split("/").pop() || requestedPath,
+      filePath: requestedPath,
+      origin: "opened",
+    }));
+    setDocSources((current) => ({ ...current, [slug]: source }));
+    setDocModels((current) => ({ ...current, [slug]: parseMarcadoDocument(slug, source) }));
+    setSelectedSlug(slug);
+    setViewMode("source");
+    setNotice(`Created ${requestedPath}`);
+  };
+
+  const handleRenameFile = () => {
+    if (!selectedEntry || !selectedDoc) return;
+    const nextPath = window.prompt("Rename file", selectedEntry.filePath || selectedEntry.fileName || selectedDoc.slug.replace(/^file:/, ""));
+    if (!nextPath || nextPath === (selectedEntry.filePath || selectedEntry.fileName)) return;
+    const nextSlug = createWorkspaceSlug(nextPath);
+    const source = docSources[selectedDoc.slug] ?? selectedDoc.source;
+
+    setWorkspaceEntries((current) => current.map((entry) =>
+      entry.slug === selectedEntry.slug
+        ? { ...entry, slug: nextSlug, fileName: nextPath.split("/").pop() || nextPath, filePath: nextPath }
+        : entry
+    ));
+    setDocSources((current) => {
+      const next = { ...current, [nextSlug]: source };
+      delete next[selectedEntry.slug];
+      return next;
+    });
+    setFileHandles((current) => {
+      if (!current[selectedEntry.slug]) return current;
+      const next = { ...current, [nextSlug]: current[selectedEntry.slug] };
+      delete next[selectedEntry.slug];
+      return next;
+    });
+    setDocModels((current) => {
+      const next = { ...current, [nextSlug]: parseMarcadoDocument(nextSlug, source) };
+      delete next[selectedEntry.slug];
+      return next;
+    });
+    moveStoredDraft(selectedEntry.slug, nextSlug);
+    setSelectedSlug(nextSlug);
+    setNotice(`Renamed to ${nextPath}`);
+  };
+
+  const handleDeleteMarker = (marker: MarkerRange) => {
+    if (!selectedDoc) return;
+    const currentSource = docSources[selectedDoc.slug] ?? selectedDoc.source;
+    const body = currentSource.slice(selectedDoc.bodySourceStart);
+    const nextBody =
+      body.slice(0, marker.closeMarkerStart) +
+      body.slice(marker.closeMarkerEnd);
+    const adjustedOpenStart = marker.openMarkerStart;
+    const adjustedOpenEnd = marker.openMarkerEnd;
+    const finalBody =
+      nextBody.slice(0, adjustedOpenStart) +
+      nextBody.slice(adjustedOpenEnd);
+    const nextSource = currentSource.slice(0, selectedDoc.bodySourceStart) + finalBody;
+    setDocSources((current) => ({ ...current, [selectedDoc.slug]: nextSource }));
+    setDocModels((current) => ({ ...current, [selectedDoc.slug]: parseMarcadoDocument(selectedDoc.slug, nextSource) }));
+    setNotice(`Deleted marker ${marker.key}`);
+  };
+
+  const handleRenameMarker = (marker: MarkerRange) => {
+    if (!selectedDoc) return;
+    const nextKey = window.prompt("Rename marker key", marker.key);
+    if (!nextKey || nextKey === marker.key) return;
+    const currentSource = docSources[selectedDoc.slug] ?? selectedDoc.source;
+    const body = currentSource.slice(selectedDoc.bodySourceStart);
+    const openRaw = body.slice(marker.openMarkerStart, marker.openMarkerEnd);
+    const closeRaw = body.slice(marker.closeMarkerStart, marker.closeMarkerEnd);
+    const nextOpenRaw = openRaw.replace(marker.key, nextKey);
+    const nextCloseRaw = closeRaw.replace(marker.key, nextKey);
+    const nextBody =
+      body.slice(0, marker.openMarkerStart) +
+      nextOpenRaw +
+      body.slice(marker.openMarkerEnd, marker.closeMarkerStart) +
+      nextCloseRaw +
+      body.slice(marker.closeMarkerEnd);
+    const nextSource = currentSource.slice(0, selectedDoc.bodySourceStart) + nextBody;
+    setDocSources((current) => ({ ...current, [selectedDoc.slug]: nextSource }));
+    setDocModels((current) => ({ ...current, [selectedDoc.slug]: parseMarcadoDocument(selectedDoc.slug, nextSource) }));
+    setNotice(`Renamed marker to ${nextKey}`);
+  };
+
+  useEffect(() => {
+    setSelectionState(null);
+  }, [selectedSlug, viewMode, docSources]);
+
+  useEffect(() => {
+    setMarkerFilter([]);
+  }, [selectedSlug]);
+
+  return (
+    <div className="h-screen w-screen overflow-hidden bg-background text-foreground">
+      <div className="grid h-full lg:grid-cols-[300px_minmax(0,1fr)]">
+        <aside className="border-b border-border bg-surface lg:border-r lg:border-b-0 overflow-y-auto">
+          <div className="p-5 border-b border-border">
+            <p className="text-xs uppercase tracking-[0.18em] text-primary font-semibold mb-2">
+              Marcado UI
+            </p>
+            <h1 className="text-2xl font-heading font-semibold mb-2">
+              Semantic Markdown ASG
+            </h1>
+            <p className="text-sm text-muted leading-6">
+              Browse example documents, inspect semantic markers, edit source,
+              and save or reload local Marcado drafts.
+            </p>
+          </div>
+
+          <div className="p-3 space-y-3">
+            <div className="flex gap-2">
+              <ActionButton onClick={handleCreateFile} icon={<FiPlus />} label="New file" />
+              <ActionButton onClick={handleRenameFile} icon={<FiEdit2 />} label="Rename" />
+            </div>
+            <FileExplorerTree
+              documents={documents}
+              entries={workspaceEntries}
+              selectedSlug={selectedSlug}
+              onSelect={setSelectedSlug}
+            />
+          </div>
+        </aside>
+
+        <main className="min-w-0 overflow-hidden">
+          {selectedDoc ? (
+            <DocumentWorkspace
+              document={selectedDoc}
+              sourceValue={docSources[selectedDoc.slug] ?? selectedDoc.source}
+              viewMode={viewMode}
+              notice={notice}
+              fileLabel={selectedEntry?.filePath ?? selectedEntry?.fileName ?? null}
+              selectionState={selectionState}
+              canUseNativeFiles={supportsFileSystemAccess()}
+              markerFilter={markerFilter}
+              visibleMarkers={visibleMarkers}
+              onChangeViewMode={setViewMode}
+              onSourceChange={handleSourceChange}
+              onSelectRange={setSelectionState}
+              onClearSelection={() => setSelectionState(null)}
+              onAddMarker={handleAddMarker}
+              onToggleMarkerFilter={(namespace) => setMarkerFilter((current) =>
+                current.includes(namespace)
+                  ? current.filter((item) => item !== namespace)
+                  : [...current, namespace]
+              )}
+              onClearMarkerFilter={() => setMarkerFilter([])}
+              onRenameMarker={handleRenameMarker}
+              onDeleteMarker={handleDeleteMarker}
+              onRefreshRuntime={handleRefreshRuntime}
+              onSaveDraft={handleSaveDraft}
+              onSaveFile={handleSaveFile}
+              onLoad={handleLoad}
+              onReset={handleReset}
+              onDownload={handleDownload}
+              onUpload={handleUpload}
+              onOpenFile={handleOpenFile}
+              onExploreFiles={handleExploreFiles}
+            />
+          ) : null}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function DocumentWorkspace({
+  document,
+  sourceValue,
+  viewMode,
+  notice,
+  fileLabel,
+  selectionState,
+  canUseNativeFiles,
+  markerFilter,
+  visibleMarkers,
+  onChangeViewMode,
+  onSourceChange,
+  onSelectRange,
+  onClearSelection,
+  onAddMarker,
+  onToggleMarkerFilter,
+  onClearMarkerFilter,
+  onRenameMarker,
+  onDeleteMarker,
+  onRefreshRuntime,
+  onSaveDraft,
+  onSaveFile,
+  onLoad,
+  onReset,
+  onDownload,
+  onUpload,
+  onOpenFile,
+  onExploreFiles,
+}: {
+  document: MarcadoDocument;
+  sourceValue: string;
+  viewMode: ViewMode;
+  notice: string;
+  fileLabel: string | null;
+  selectionState: SelectionState | null;
+  canUseNativeFiles: boolean;
+  markerFilter: string[];
+  visibleMarkers: MarkerRange[];
+  onChangeViewMode: (mode: ViewMode) => void;
+  onSourceChange: (value: string) => void;
+  onSelectRange: (selection: SelectionState | null) => void;
+  onClearSelection: () => void;
+  onAddMarker: (namespace: string, classification: string) => void;
+  onToggleMarkerFilter: (namespace: string) => void;
+  onClearMarkerFilter: () => void;
+  onRenameMarker: (marker: MarkerRange) => void;
+  onDeleteMarker: (marker: MarkerRange) => void;
+  onRefreshRuntime: () => void | Promise<void>;
+  onSaveDraft: () => void;
+  onSaveFile: () => void | Promise<void>;
+  onLoad: () => void;
+  onReset: () => void;
+  onDownload: () => void;
+  onUpload: React.ChangeEventHandler<HTMLInputElement>;
+  onOpenFile: () => void | Promise<void>;
+  onExploreFiles: () => void | Promise<void>;
+}) {
+  const renderedRef = useRef<HTMLDivElement | null>(null);
+
+  const handleRenderedMouseUp = () => {
+    if (viewMode !== "rendered") return;
+    const container = renderedRef.current;
+    if (!container) return;
+
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed || !selection.toString().trim()) {
+      onSelectRange(null);
+      return;
+    }
+
+    if (!container.contains(selection.anchorNode) || !container.contains(selection.focusNode)) {
+      onSelectRange(null);
+      return;
+    }
+
+    const start = Math.min(
+      getTextOffset(container, selection.anchorNode!, selection.anchorOffset),
+      getTextOffset(container, selection.focusNode!, selection.focusOffset)
+    );
+    const end = Math.max(
+      getTextOffset(container, selection.anchorNode!, selection.anchorOffset),
+      getTextOffset(container, selection.focusNode!, selection.focusOffset)
+    );
+
+    if (end <= start) {
+      onSelectRange(null);
+      return;
+    }
+
+    onSelectRange({ start, end, text: selection.toString().trim() });
+  };
+
+  return (
+    <div className="grid h-full min-w-0 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <section className="min-w-0 overflow-y-auto">
+        <header className="sticky top-0 z-10 border-b border-border bg-background/92 backdrop-blur px-6 py-5 lg:px-8">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-sm text-primary font-medium mb-1">{document.id}</p>
+                <h2 className="text-3xl font-heading font-semibold">{document.title}</h2>
+                <p className="text-sm text-muted mt-2 max-w-3xl leading-6">
+                  UI preview for Marcado documents: render the plain-text projection,
+                  inspect raw milestone markers, and iterate on the source locally.
+                </p>
+                {fileLabel ? (
+                  <p className="text-xs text-muted/80 mt-2">{fileLabel}</p>
+                ) : null}
+              </div>
+
+              <div className="inline-flex rounded-xl border border-border bg-surface p-1 self-start lg:self-auto">
+                <ViewButton active={viewMode === "rendered"} onClick={() => onChangeViewMode("rendered")} icon={<FiBookOpen />}>
+                  Rendered
+                </ViewButton>
+                <ViewButton active={viewMode === "source"} onClick={() => onChangeViewMode("source")} icon={<FiCode />}>
+                  Source
+                </ViewButton>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {viewMode === "rendered" && selectionState ? (
+                <MarkerComposer
+                  selectionText={selectionState.text}
+                  namespaces={document.namespaces.map((namespace) => namespace.name)}
+                  onAddMarker={onAddMarker}
+                  onCancel={onClearSelection}
+                />
+              ) : null}
+              <ActionButton onClick={onRefreshRuntime} icon={<FiGitBranch />} label="Refresh runtime" />
+              <ActionButton onClick={onSaveDraft} icon={<FiSave />} label="Save draft" />
+              <ActionButton onClick={onLoad} icon={<FiUpload />} label="Load draft" />
+              <ActionButton onClick={onSaveFile} icon={<FiSave />} label="Save file" />
+              <ActionButton onClick={onReset} icon={<FiRotateCcw />} label="Reset" />
+              <ActionButton onClick={onDownload} icon={<FiDownload />} label="Download" />
+              {canUseNativeFiles ? (
+                <>
+                  <ActionButton onClick={onOpenFile} icon={<FiUpload />} label="Open file" />
+                  <ActionButton onClick={onExploreFiles} icon={<FiHash />} label="Explore folder" />
+                </>
+              ) : null}
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground hover:bg-surface-hover">
+                <FiUpload />
+                <span>Upload file</span>
+                <input
+                  type="file"
+                  accept=".md,text/markdown,text/plain"
+                  className="hidden"
+                  aria-label="Upload file"
+                  onChange={onUpload}
+                />
+              </label>
+              {notice ? <span className="text-sm text-muted">{notice}</span> : null}
+            </div>
+          </div>
+        </header>
+
+        <div className="p-6 lg:p-8">
+          <div className="rounded-3xl border border-border bg-surface shadow-sm overflow-hidden">
+            {viewMode === "rendered" ? (
+              <div className="p-6 lg:p-8">
+                <div ref={renderedRef} onMouseUp={handleRenderedMouseUp} className="prose-content max-w-4xl select-text">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                    {buildHighlightedMarkdown(document.plainBody, visibleMarkers)}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            ) : (
+              <textarea
+                aria-label="Marcado source editor"
+                value={sourceValue}
+                onChange={(event) => onSourceChange(event.target.value)}
+                className="min-h-[70vh] w-full resize-y bg-surface p-6 font-mono text-sm leading-7 text-foreground outline-none lg:p-8"
+                spellCheck={false}
+              />
+            )}
+          </div>
+        </div>
+      </section>
+
+      <aside className="border-t border-border bg-surface overflow-y-auto xl:border-t-0 xl:border-l">
+        <div className="p-5 space-y-5">
+          <InfoCard icon={<FiFileText />} title="Document">
+            <KeyValue label="ID" value={document.id} />
+            <KeyValue label="Type" value={document.type} />
+            <KeyValue label="Markers" value={String(document.markers.length)} />
+            <KeyValue label="Edges" value={String(document.graphEdges.length)} />
+          </InfoCard>
+
+          <InfoCard icon={<FiHash />} title="Namespaces">
+            <div className="space-y-3">
+              {document.namespaces.map((namespace) => (
+                <div key={namespace.name} className="rounded-2xl border border-border bg-background p-3">
+                  <div className="flex items-center justify-between gap-3 mb-2">
+                    <span className="font-medium text-foreground">{namespace.name}</span>
+                    <span className="text-[11px] uppercase tracking-wide text-primary">
+                      {namespace.projection || "n/a"}
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted space-y-1">
+                    <div>allow_crossing: {String(namespace.allowCrossing ?? false)}</div>
+                    <div>
+                      requires_addressable_nodes: {String(namespace.requiresAddressableNodes ?? false)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </InfoCard>
+
+          <InfoCard icon={<FiGitBranch />} title="Graph edges">
+            {document.graphEdges.length === 0 ? (
+              <EmptyState text="No explicit graph edges declared." />
+            ) : (
+              <div className="space-y-3">
+                {document.graphEdges.map((edge, index) => (
+                  <div key={`${edge.namespace}-${edge.type}-${index}`} className="rounded-2xl border border-border bg-background p-3 text-sm">
+                    <div className="text-primary font-medium mb-2">{edge.namespace}:{edge.type}</div>
+                    <div className="text-muted break-words">from {edge.from}</div>
+                    <div className="text-muted break-words">to {edge.to}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </InfoCard>
+
+          <InfoCard icon={<FiCode />} title="Marker ranges">
+            <div className="mb-3 flex flex-wrap gap-2">
+              {document.namespaces.map((namespace) => {
+                const active = markerFilter.length === 0 || markerFilter.includes(namespace.name);
+                return (
+                  <button
+                    key={namespace.name}
+                    onClick={() => onToggleMarkerFilter(namespace.name)}
+                    className={`rounded-full border px-2 py-1 text-xs cursor-pointer ${active ? "border-primary/40 bg-primary/10 text-primary" : "border-border text-muted"}`}
+                  >
+                    {namespace.name}
+                  </button>
+                );
+              })}
+              {markerFilter.length > 0 ? (
+                <button onClick={onClearMarkerFilter} className="rounded-full border border-border px-2 py-1 text-xs text-muted cursor-pointer">
+                  Clear
+                </button>
+              ) : null}
+            </div>
+            <div className="space-y-3">
+              {visibleMarkers.map((marker) => (
+                <MarkerCard
+                  key={`${marker.key}-${marker.start}-${marker.end}`}
+                  marker={marker}
+                  onRename={() => onRenameMarker(marker)}
+                  onDelete={() => onDeleteMarker(marker)}
+                />
+              ))}
+              {visibleMarkers.length === 0 ? <EmptyState text="No markers match the active filters." /> : null}
+            </div>
+          </InfoCard>
+
+          <InfoCard icon={<FiFileText />} title="Diagnostics">
+            {document.diagnostics.length === 0 ? (
+              <EmptyState text="No marker pairing issues found in this example." />
+            ) : (
+              <ul className="space-y-2 text-sm text-warning">
+                {document.diagnostics.map((diagnostic) => (
+                  <li key={diagnostic} className="rounded-xl border border-warning/20 bg-warning/10 p-3">
+                    {diagnostic}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </InfoCard>
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+function FileExplorerTree({
+  documents,
+  entries,
+  selectedSlug,
+  onSelect,
+}: {
+  documents: MarcadoDocument[];
+  entries: WorkspaceEntry[];
+  selectedSlug: string;
+  onSelect: (slug: string) => void;
+}) {
+  const nodes = buildFileTree(entries, documents);
+  return (
+    <div className="space-y-1">
+      {nodes.map((node) => (
+        <FileTreeNodeView key={node.path} node={node} selectedSlug={selectedSlug} onSelect={onSelect} depth={0} />
+      ))}
+    </div>
+  );
+}
+
+function FileTreeNodeView({
+  node,
+  selectedSlug,
+  onSelect,
+  depth,
+}: {
+  node: FileTreeNode;
+  selectedSlug: string;
+  onSelect: (slug: string) => void;
+  depth: number;
+}) {
+  if (node.kind === "folder") {
+    return (
+      <div>
+        <div className="mb-1 flex items-center gap-2 px-2 text-xs uppercase tracking-wide text-muted" style={{ paddingLeft: `${depth * 12 + 8}px` }}>
+          <FiFolder /> {node.name}
+        </div>
+        <div className="space-y-1">
+          {node.children.map((child) => (
+            <FileTreeNodeView key={child.path} node={child} selectedSlug={selectedSlug} onSelect={onSelect} depth={depth + 1} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const selected = node.slug === selectedSlug;
+  return (
+    <button
+      onClick={() => onSelect(node.slug)}
+      className={`w-full rounded-xl border p-3 text-left transition cursor-pointer ${selected ? "border-primary/40 bg-primary/10" : "border-border bg-background hover:bg-surface-hover"}`}
+      style={{ marginLeft: `${depth * 12}px` }}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-sm font-semibold text-foreground"><FiFile className="shrink-0" /> <span className="truncate">{node.title}</span></div>
+          <div className="mt-1 text-xs text-muted truncate">{node.path}</div>
+        </div>
+        <span className="rounded-full border border-border px-2 py-0.5 text-[11px] text-muted uppercase tracking-wide">{node.origin}</span>
+      </div>
+      <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted">
+        <span className="rounded-full bg-surface px-2 py-1 border border-border">{node.markers} markers</span>
+        <span className="rounded-full bg-surface px-2 py-1 border border-border">{node.namespaces} namespaces</span>
+      </div>
+    </button>
+  );
+}
+
+function ViewButton({
+  active,
+  onClick,
+  icon,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition cursor-pointer ${
+        active
+          ? "bg-primary text-on-primary"
+          : "text-muted hover:bg-background hover:text-foreground"
+      }`}
+    >
+      {icon}
+      {children}
+    </button>
+  );
+}
+
+function ActionButton({ onClick, icon, label }: { onClick: () => void; icon: ReactNode; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground hover:bg-surface-hover"
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
+function InfoCard({
+  icon,
+  title,
+  children,
+}: {
+  icon: ReactNode;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section>
+      <div className="flex items-center gap-2 mb-3">
+        <div className="text-primary">{icon}</div>
+        <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted">
+          {title}
+        </h3>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function KeyValue({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-background px-3 py-2 text-sm">
+      <span className="text-muted">{label}</span>
+      <span className="font-medium text-foreground text-right break-all">{value}</span>
+    </div>
+  );
+}
+
+function MarkerCard({
+  marker,
+  onRename,
+  onDelete,
+}: {
+  marker: MarkerRange;
+  onRename: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <div className="rounded-2xl border border-border bg-background p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-sm font-medium text-foreground break-words">{marker.key}</div>
+        <div className="flex gap-1">
+          <button onClick={onRename} aria-label={`Rename ${marker.key}`} className="rounded-md border border-border p-1 text-muted hover:bg-surface-hover cursor-pointer"><FiEdit2 /></button>
+          <button onClick={onDelete} aria-label={`Delete ${marker.key}`} className="rounded-md border border-border p-1 text-muted hover:bg-surface-hover cursor-pointer"><FiTrash2 /></button>
+        </div>
+      </div>
+      <div className="mt-1 text-xs text-primary break-all">{marker.localAnchor}</div>
+      <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-muted">
+        <span className="rounded-full border border-border px-2 py-1">{marker.namespace}</span>
+        <span className="rounded-full border border-border px-2 py-1">
+          {marker.start}–{marker.end}
+        </span>
+        <span className="rounded-full border border-border px-2 py-1">
+          {marker.facets.map((facet) => facet.join(".")).join(" | ")}
+        </span>
+      </div>
+      <p className="mt-3 text-sm text-muted leading-6">{marker.text || "(empty range)"}</p>
+    </div>
+  );
+}
+
+function MarkerComposer({
+  selectionText,
+  namespaces,
+  onAddMarker,
+  onCancel,
+}: {
+  selectionText: string;
+  namespaces: string[];
+  onAddMarker: (namespace: string, classification: string) => void;
+  onCancel: () => void;
+}) {
+  const [namespace, setNamespace] = useState(namespaces[0] ?? "sem");
+  const [classification, setClassification] = useState("");
+
+  useEffect(() => {
+    setNamespace(namespaces[0] ?? "sem");
+    setClassification("");
+  }, [selectionText, namespaces]);
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-primary/30 bg-primary/8 px-3 py-2">
+      <span className="text-xs text-muted max-w-48 truncate">“{selectionText}”</span>
+      <select
+        aria-label="Marker namespace"
+        value={namespace}
+        onChange={(event) => setNamespace(event.target.value)}
+        className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm text-foreground outline-none"
+      >
+        {namespaces.length > 0 ? namespaces.map((item) => (
+          <option key={item} value={item}>{item}</option>
+        )) : <option value="sem">sem</option>}
+      </select>
+      <input
+        aria-label="Marker classification"
+        value={classification}
+        onChange={(event) => setClassification(event.target.value)}
+        placeholder="concept.new_marker"
+        className="min-w-48 rounded-lg border border-border bg-background px-2 py-1.5 text-sm text-foreground outline-none"
+      />
+      <button
+        onClick={() => onAddMarker(namespace, classification)}
+        className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-sm text-on-primary cursor-pointer"
+      >
+        <FiPlus />
+        Add marker
+      </button>
+      <button
+        onClick={onCancel}
+        className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm text-muted cursor-pointer hover:bg-background"
+      >
+        <FiX />
+        Cancel
+      </button>
+    </div>
+  );
+}
+
+function EmptyState({ text }: { text: string }) {
+  return <div className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted">{text}</div>;
+}
+
+function buildHighlightedMarkdown(markdown: string, markers: MarkerRange[]): string {
+  if (markers.length === 0) return markdown;
+
+  const boundaries = Array.from(
+    new Set([0, markdown.length, ...markers.flatMap((marker) => [marker.start, marker.end])])
+  ).sort((a, b) => a - b);
+
+  let result = "";
+
+  for (let i = 0; i < boundaries.length - 1; i += 1) {
+    const start = boundaries[i];
+    const end = boundaries[i + 1];
+    if (start === end) continue;
+
+    const chunk = markdown.slice(start, end);
+    const active = markers.filter((marker) => marker.start <= start && marker.end >= end);
+
+    if (active.length === 0) {
+      result += chunk;
+      continue;
+    }
+
+    const namespaces = Array.from(new Set(active.map((marker) => marker.namespace)));
+    const classNames = ["marker-highlight", ...namespaces.map((namespace) => `marker-highlight-${namespace}`)].join(" ");
+    const title = escapeHtml(active.map((marker) => marker.key).join(" | "));
+
+    result += `<span class="${classNames}" title="${title}" data-marker-count="${active.length}">${chunk}</span>`;
+  }
+
+  return result;
+}
+
+function getTextOffset(container: Node, node: Node, offset: number): number {
+  let charCount = 0;
+
+  function walk(current: Node): boolean {
+    if (current === node) {
+      if (current.nodeType === Node.TEXT_NODE) {
+        charCount += offset;
+      } else {
+        for (let i = 0; i < Math.min(offset, current.childNodes.length); i += 1) {
+          charCount += (current.childNodes[i].textContent || "").length;
+        }
+      }
+      return true;
+    }
+
+    if (current.nodeType === Node.TEXT_NODE) {
+      charCount += (current.textContent || "").length;
+      return false;
+    }
+
+    for (let i = 0; i < current.childNodes.length; i += 1) {
+      if (walk(current.childNodes[i])) return true;
+    }
+
+    return false;
+  }
+
+  walk(container);
+  return charCount;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function buildFileTree(entries: WorkspaceEntry[], documents: MarcadoDocument[]): FileTreeNode[] {
+  const root: FileTreeNode[] = [];
+  const docBySlug = new Map(documents.map((doc) => [doc.slug, doc]));
+
+  for (const entry of entries) {
+    const path = entry.filePath || entry.fileName || entry.slug.replace(/^file:/, "");
+    const parts = path.split("/").filter(Boolean);
+    let level = root;
+    let currentPath = "";
+
+    parts.forEach((part, index) => {
+      currentPath = currentPath ? `${currentPath}/${part}` : part;
+      const isLeaf = index === parts.length - 1;
+
+      if (isLeaf) {
+        const doc = docBySlug.get(entry.slug);
+        level.push({
+          kind: "file",
+          name: part,
+          path: currentPath,
+          slug: entry.slug,
+          title: doc?.title || part,
+          origin: entry.origin,
+          markers: doc?.markers.length || 0,
+          namespaces: doc?.namespaces.length || 0,
+        });
+        return;
+      }
+
+      let folder = level.find((node): node is Extract<FileTreeNode, { kind: "folder" }> => node.kind === "folder" && node.path === currentPath);
+      if (!folder) {
+        folder = { kind: "folder", name: part, path: currentPath, children: [] };
+        level.push(folder);
+      }
+      level = folder.children;
+    });
+  }
+
+  return sortTreeNodes(root);
+}
+
+function sortTreeNodes(nodes: FileTreeNode[]): FileTreeNode[] {
+  return [...nodes]
+    .sort((a, b) => {
+      if (a.kind !== b.kind) return a.kind === "folder" ? -1 : 1;
+      return a.path.localeCompare(b.path);
+    })
+    .map((node) => node.kind === "folder" ? { ...node, children: sortTreeNodes(node.children) } : node);
+}
+
+function supportsFileSystemAccess(): boolean {
+  return typeof window !== "undefined" && !!window.showOpenFilePicker && !!window.showDirectoryPicker;
+}
+
+function createWorkspaceSlug(seed: string): string {
+  return `file:${seed.replace(/[^a-zA-Z0-9._/-]+/g, "-")}`;
+}
+
+function upsertWorkspaceEntry(current: WorkspaceEntry[], entry: WorkspaceEntry): WorkspaceEntry[] {
+  const existingIndex = current.findIndex((item) => item.slug === entry.slug);
+  if (existingIndex === -1) return [...current, entry];
+  const next = [...current];
+  next[existingIndex] = entry;
+  return next;
+}
+
+async function collectMarkdownFiles(
+  directoryHandle: FileSystemDirectoryHandle,
+  prefix = directoryHandle.name
+): Promise<Array<{ path: string; handle: FileSystemFileHandle; source: string }>> {
+  const discovered: Array<{ path: string; handle: FileSystemFileHandle; source: string }> = [];
+
+  for await (const [name, handle] of directoryHandle.entries()) {
+    const path = `${prefix}/${name}`;
+    if (handle.kind === "file" && /\.md$/i.test(name)) {
+      const file = await handle.getFile();
+      discovered.push({ path, handle, source: await file.text() });
+    }
+
+    if (handle.kind === "directory") {
+      discovered.push(...await collectMarkdownFiles(handle, path));
+    }
+  }
+
+  return discovered;
+}
+
+function basenameWithoutExtension(path: string): string {
+  const last = path.split("/").pop() || path;
+  return last.replace(/\.[^.]+$/, "");
+}
+
+function moveStoredDraft(fromSlug: string, toSlug: string): void {
+  try {
+    const value = localStorage.getItem(`${STORAGE_PREFIX}${fromSlug}`);
+    if (value != null) {
+      localStorage.setItem(`${STORAGE_PREFIX}${toSlug}`, value);
+      localStorage.removeItem(`${STORAGE_PREFIX}${fromSlug}`);
+    }
+  } catch {
+    // ignore storage failures
+  }
+}
+
+function findAllOccurrences(text: string, query: string): number[] {
+  if (!query) return [];
+  const matches: number[] = [];
+  let startIndex = 0;
+
+  while (startIndex <= text.length) {
+    const index = text.indexOf(query, startIndex);
+    if (index === -1) break;
+    matches.push(index);
+    startIndex = index + query.length;
+  }
+
+  return matches;
+}
+
+function readStoredSource(slug: string): string {
+  try {
+    return localStorage.getItem(`${STORAGE_PREFIX}${slug}`) ?? "";
+  } catch {
+    return "";
+  }
+}

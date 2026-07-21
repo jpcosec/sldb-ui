@@ -1,0 +1,32 @@
+{
+  "anchors": [],
+  "asg_version": "0.1",
+  "diagnostics": [],
+  "document": {},
+  "format": {
+    "name": "semantic-markdown-asg"
+  },
+  "graphs": {},
+  "markers": [],
+  "ranges": [],
+  "source": {
+    "body": "\n# State Management Solutions — Research Findings\n\n## Overview\n\nEvaluated three state management approaches for the new dashboard feature. This document summarizes findings and recommendations.\n\n## Candidates\n\n### 1. Zustand\n- **Bundle size:** ~1.1KB\n- **Learning curve:** Low\n- **TypeScript support:** Excellent\n- **Pros:** Minimal boilerplate, simple API, works outside React\n- **Cons:** Limited middleware ecosystem\n\n### 2. Redux Toolkit\n- **Bundle size:** ~11.4KB (with RTK)\n- **Learning curve:** Medium\n- **TypeScript support:** Very good\n- **Pros:** Mature ecosystem, devtools, middleware\n- **Cons:** Verbose setup, steep learning for new devs\n\n### 3. Jotai\n- **Bundle size:** ~3.2KB\n- **Learning curve:** Low\n- **TypeScript support:** Excellent\n- **Pros:** Atomic approach, great for shared state, built-in persistence\n- **Cons:** Can lead to scattered state definitions\n\n## Quantitative Comparison\n\n```typescript\n// Zustand example\nconst useStore = create<Store>((set) => ({\n  count: 0,\n  increment: () => set((state) => ({ count: state.count + 1 })),\n}));\n\n// Redux Toolkit example\nconst counterSlice = createSlice({\n  name: 'counter',\n  initialState: { count: 0 },\n  reducers: { increment: (state) => { state.count += 1; } },\n});\n\n// Jotai example\nconst countAtom = atom(0);\nconst [count, setCount] = useAtom(countAtom);\n```\n\n## Recommendation\n\n**Zustand** is recommended for this project based on:\n1. Smallest bundle size impact\n2. Fastest onboarding for the team\n3. Sufficient for our current state complexity\n4. Excellent TypeScript inference\n\n**Status:** This document is under review pending team feedback. Please add comments in the discussion thread.\n\n## Open Questions\n\n- Do we need persistence layer (localStorage/session)?\n- Should we introduce a state management library at all, or use React Context + hooks?\n- What about server state with React Query/TanStack Query?",
+    "frontmatter": {
+      "date": "2025-01-10",
+      "status": "review",
+      "tags": [
+        "research",
+        "frontend",
+        "state-management"
+      ],
+      "title": "Research Findings: State Management Solutions"
+    },
+    "path": null,
+    "plain_text": "\n# State Management Solutions — Research Findings\n\n## Overview\n\nEvaluated three state management approaches for the new dashboard feature. This document summarizes findings and recommendations.\n\n## Candidates\n\n### 1. Zustand\n- **Bundle size:** ~1.1KB\n- **Learning curve:** Low\n- **TypeScript support:** Excellent\n- **Pros:** Minimal boilerplate, simple API, works outside React\n- **Cons:** Limited middleware ecosystem\n\n### 2. Redux Toolkit\n- **Bundle size:** ~11.4KB (with RTK)\n- **Learning curve:** Medium\n- **TypeScript support:** Very good\n- **Pros:** Mature ecosystem, devtools, middleware\n- **Cons:** Verbose setup, steep learning for new devs\n\n### 3. Jotai\n- **Bundle size:** ~3.2KB\n- **Learning curve:** Low\n- **TypeScript support:** Excellent\n- **Pros:** Atomic approach, great for shared state, built-in persistence\n- **Cons:** Can lead to scattered state definitions\n\n## Quantitative Comparison\n\n```typescript\n// Zustand example\nconst useStore = create<Store>((set) => ({\n  count: 0,\n  increment: () => set((state) => ({ count: state.count + 1 })),\n}));\n\n// Redux Toolkit example\nconst counterSlice = createSlice({\n  name: 'counter',\n  initialState: { count: 0 },\n  reducers: { increment: (state) => { state.count += 1; } },\n});\n\n// Jotai example\nconst countAtom = atom(0);\nconst [count, setCount] = useAtom(countAtom);\n```\n\n## Recommendation\n\n**Zustand** is recommended for this project based on:\n1. Smallest bundle size impact\n2. Fastest onboarding for the team\n3. Sufficient for our current state complexity\n4. Excellent TypeScript inference\n\n**Status:** This document is under review pending team feedback. Please add comments in the discussion thread.\n\n## Open Questions\n\n- Do we need persistence layer (localStorage/session)?\n- Should we introduce a state management library at all, or use React Context + hooks?\n- What about server state with React Query/TanStack Query?"
+  },
+  "validation": {
+    "blocking": [],
+    "lint": [],
+    "valid": true
+  }
+}

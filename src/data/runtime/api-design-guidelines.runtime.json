@@ -1,0 +1,33 @@
+{
+  "anchors": [],
+  "asg_version": "0.1",
+  "diagnostics": [],
+  "document": {},
+  "format": {
+    "name": "semantic-markdown-asg"
+  },
+  "graphs": {},
+  "markers": [],
+  "ranges": [],
+  "source": {
+    "body": "\n# API Design Guidelines\n\n## Naming Conventions\n\nAll REST endpoints should follow these conventions:\n\n- **Plural nouns** for resources: `/users`, `/documents`, `/annotations`\n- **Snake case** for query parameters: `?page_number=1&page_size=20`\n- **Kebab case** for URL paths with multiple words: `/user-preferences`\n- **Version prefix** for major API versions: `/v1/documents`\n\n## Response Format\n\n```json\n{\n  \"data\": {},\n  \"meta\": {\n    \"page\": 1,\n    \"page_size\": 20,\n    \"total\": 142\n  },\n  \"errors\": []\n}\n```\n\n## Status Codes\n\n| Code | Usage |\n|------|-------|\n| 200 | Successful GET, PUT, PATCH |\n| 201 | Successful POST (resource created) |\n| 204 | Successful DELETE |\n| 400 | Bad request (validation error) |\n| 401 | Unauthenticated |\n| 403 | Unauthorized (permission denied) |\n| 404 | Resource not found |\n| 422 | Unprocessable entity |\n| 429 | Rate limited |\n| 500 | Internal server error |\n\n## Error Response Format\n\n```json\n{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Title is required\",\n    \"details\": [\n      {\n        \"field\": \"title\",\n        \"reason\": \"must not be empty\"\n      }\n    ]\n  }\n}\n```\n\n## Authentication\n\nAll API requests (except public endpoints) must include:\n\n```\nAuthorization: Bearer <jwt_token>\n```\n\n## Rate Limiting\n\n- Anonymous: 60 requests/minute\n- Authenticated: 300 requests/minute\n- Premium tier: 1000 requests/minute\n\nRate limit headers are returned in every response:\n- `X-RateLimit-Limit`\n- `X-RateLimit-Remaining`\n- `X-RateLimit-Reset`\n\n## TODO\n\n- [ ] Add pagination examples\n- [ ] Define sorting conventions (`sort=created_at:desc`)\n- [ ] Document webhook format\n- [ ] Add OpenAPI/Swagger examples",
+    "frontmatter": {
+      "date": "2025-01-05",
+      "status": "draft",
+      "tags": [
+        "api",
+        "backend",
+        "standards",
+        "documentation"
+      ],
+      "title": "API Design Guidelines"
+    },
+    "path": null,
+    "plain_text": "\n# API Design Guidelines\n\n## Naming Conventions\n\nAll REST endpoints should follow these conventions:\n\n- **Plural nouns** for resources: `/users`, `/documents`, `/annotations`\n- **Snake case** for query parameters: `?page_number=1&page_size=20`\n- **Kebab case** for URL paths with multiple words: `/user-preferences`\n- **Version prefix** for major API versions: `/v1/documents`\n\n## Response Format\n\n```json\n{\n  \"data\": {},\n  \"meta\": {\n    \"page\": 1,\n    \"page_size\": 20,\n    \"total\": 142\n  },\n  \"errors\": []\n}\n```\n\n## Status Codes\n\n| Code | Usage |\n|------|-------|\n| 200 | Successful GET, PUT, PATCH |\n| 201 | Successful POST (resource created) |\n| 204 | Successful DELETE |\n| 400 | Bad request (validation error) |\n| 401 | Unauthenticated |\n| 403 | Unauthorized (permission denied) |\n| 404 | Resource not found |\n| 422 | Unprocessable entity |\n| 429 | Rate limited |\n| 500 | Internal server error |\n\n## Error Response Format\n\n```json\n{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Title is required\",\n    \"details\": [\n      {\n        \"field\": \"title\",\n        \"reason\": \"must not be empty\"\n      }\n    ]\n  }\n}\n```\n\n## Authentication\n\nAll API requests (except public endpoints) must include:\n\n```\nAuthorization: Bearer <jwt_token>\n```\n\n## Rate Limiting\n\n- Anonymous: 60 requests/minute\n- Authenticated: 300 requests/minute\n- Premium tier: 1000 requests/minute\n\nRate limit headers are returned in every response:\n- `X-RateLimit-Limit`\n- `X-RateLimit-Remaining`\n- `X-RateLimit-Reset`\n\n## TODO\n\n- [ ] Add pagination examples\n- [ ] Define sorting conventions (`sort=created_at:desc`)\n- [ ] Document webhook format\n- [ ] Add OpenAPI/Swagger examples"
+  },
+  "validation": {
+    "blocking": [],
+    "lint": [],
+    "valid": true
+  }
+}

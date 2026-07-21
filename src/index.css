@@ -1,0 +1,225 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-heading: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --color-primary: oklch(0.546 0.245 262.88);
+  --color-primary-hover: oklch(0.488 0.243 264.38);
+  --color-on-primary: oklch(1 0 0);
+  --color-secondary: oklch(0.707 0.165 254.62);
+  --color-accent: oklch(0.769 0.188 70.08);
+  --color-accent-hover: oklch(0.681 0.162 58.32);
+  --color-background: oklch(0.141 0.005 285.82);
+  --color-surface: oklch(0.205 0.008 285.82);
+  --color-surface-hover: oklch(0.269 0.011 285.82);
+  --color-foreground: oklch(0.967 0.003 264.54);
+  --color-muted: oklch(0.373 0.016 285.82);
+  --color-border: oklch(0.279 0.015 285.82);
+  --color-destructive: oklch(0.577 0.215 27.33);
+  --color-ring: oklch(0.546 0.245 262.88);
+  --color-success: oklch(0.627 0.194 149.21);
+  --color-warning: oklch(0.769 0.188 70.08);
+}
+
+html {
+  scrollbar-color: oklch(0.373 0.016 285.82) transparent;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Annotation highlight styles */
+.annotation-highlight {
+  background-color: oklch(0.769 0.188 70.08 / 0.35);
+  border-bottom: 2px solid oklch(0.769 0.188 70.08 / 0.6);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background-color 200ms ease, box-shadow 200ms ease;
+  position: relative;
+}
+
+.annotation-highlight:hover {
+  background-color: oklch(0.769 0.188 70.08 / 0.55);
+  box-shadow: 0 0 0 2px oklch(0.769 0.188 70.08 / 0.25);
+}
+
+.annotation-highlight-new {
+  animation: pulse-highlight 1s ease-in-out;
+}
+
+@keyframes pulse-highlight {
+  0%, 100% {
+    background-color: oklch(0.769 0.188 70.08 / 0.35);
+    box-shadow: 0 0 0 0px oklch(0.769 0.188 70.08 / 0.3);
+  }
+  50% {
+    background-color: oklch(0.769 0.188 70.08 / 0.6);
+    box-shadow: 0 0 0 4px oklch(0.769 0.188 70.08 / 0.15);
+  }
+}
+
+/* Annotation tooltip */
+.annotation-tooltip {
+  animation: tooltip-fadein 150ms ease-out;
+}
+
+@keyframes tooltip-fadein {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.annotation-tooltip button:hover {
+  filter: brightness(1.2);
+}
+
+/* Rendered marker highlights */
+.marker-highlight {
+  border-radius: 0.2rem;
+  padding: 0.02rem 0.04rem;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  box-shadow:
+    inset 0 -1px 0 var(--marker-line-1, transparent),
+    inset 0 -3px 0 var(--marker-line-2, transparent),
+    inset 0 -5px 0 var(--marker-line-3, transparent);
+  transition: background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.marker-highlight:hover {
+  background-color: oklch(0.967 0.003 264.54 / 0.06);
+}
+
+.marker-highlight-struct {
+  --marker-line-1: oklch(0.546 0.245 262.88 / 0.85);
+}
+
+.marker-highlight-sem {
+  --marker-line-2: oklch(0.627 0.194 149.21 / 0.85);
+}
+
+.marker-highlight-rhet {
+  --marker-line-3: oklch(0.769 0.188 70.08 / 0.95);
+}
+
+/* Prose-like markdown content styles */
+.prose-content h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--color-foreground);
+}
+
+.prose-content h2 {
+  font-size: 1.375rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  margin-top: 1.5rem;
+  color: var(--color-foreground);
+}
+
+.prose-content h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  margin-top: 1.25rem;
+  color: var(--color-foreground);
+}
+
+.prose-content p {
+  margin-bottom: 0.875rem;
+  line-height: 1.7;
+}
+
+.prose-content ul,
+.prose-content ol {
+  margin-bottom: 0.875rem;
+  padding-left: 1.5rem;
+}
+
+.prose-content li {
+  margin-bottom: 0.25rem;
+  line-height: 1.6;
+}
+
+.prose-content strong {
+  font-weight: 600;
+}
+
+.prose-content blockquote {
+  border-left: 3px solid var(--color-primary);
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-bottom: 0.875rem;
+  color: oklch(0.707 0.018 285.82);
+  font-style: italic;
+}
+
+.prose-content code {
+  background-color: oklch(0.279 0.015 285.82);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-size: 0.875em;
+}
+
+.prose-content pre {
+  background-color: oklch(0.18 0.008 285.82);
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 0.875rem;
+}
+
+.prose-content pre code {
+  background: none;
+  padding: 0;
+}
+
+.prose-content a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.prose-content a:hover {
+  color: var(--color-primary-hover);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: oklch(0.373 0.016 285.82);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: oklch(0.471 0.018 285.82);
+}

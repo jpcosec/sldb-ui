@@ -1,0 +1,32 @@
+{
+  "anchors": [],
+  "asg_version": "0.1",
+  "diagnostics": [],
+  "document": {},
+  "format": {
+    "name": "semantic-markdown-asg"
+  },
+  "graphs": {},
+  "markers": [],
+  "ranges": [],
+  "source": {
+    "body": "\n# Project Architecture Overview\n\n## System Architecture\n\nThe application follows a **microservices architecture** with the following core services:\n\n### Frontend Layer\n- React-based SPA with TypeScript\n- Tailwind CSS for styling\n- Vite as build tool\n\n### Backend Layer\n- Node.js API Gateway\n- Microservices for domain logic\n- PostgreSQL for persistent storage\n\n### Communication\n- REST APIs for synchronous calls\n- Message queue (RabbitMQ) for async processing\n- WebSocket for real-time updates\n\n> **Note:** The message queue implementation is pending review. See the related ADR for details.\n\n## Key Design Decisions\n\n1. **TypeScript over JavaScript** — Type safety reduces production bugs by approximately 40%\n2. **Microservices over Monolith** — Better scalability and team autonomy\n3. **PostgreSQL over NoSQL** — Data integrity and ACID compliance requirements\n\n## Data Flow\n\n```\nClient → API Gateway → Auth Service → Domain Service → Database\n                           ↓\n                    Message Queue → Event Handlers\n```\n\n## Performance Targets\n\n| Metric | Target | Current |\n|--------|--------|---------|\n| Response Time | <200ms | ~150ms |\n| Uptime | 99.9% | 99.95% |\n| Error Rate | <0.1% | 0.08% |\n\n## Security Considerations\n\n- All traffic encrypted via TLS 1.3\n- JWT-based authentication with 15-minute token expiry\n- Rate limiting at API Gateway level\n- Regular dependency audits with `npm audit`\n\n## Next Steps\n\n1. Complete the message queue integration\n2. Set up monitoring dashboard (Grafana + Prometheus)\n3. Conduct load testing before Q1 launch",
+    "frontmatter": {
+      "date": "2024-12-15",
+      "status": "published",
+      "tags": [
+        "architecture",
+        "system-design",
+        "backend"
+      ],
+      "title": "Project Architecture Overview"
+    },
+    "path": null,
+    "plain_text": "\n# Project Architecture Overview\n\n## System Architecture\n\nThe application follows a **microservices architecture** with the following core services:\n\n### Frontend Layer\n- React-based SPA with TypeScript\n- Tailwind CSS for styling\n- Vite as build tool\n\n### Backend Layer\n- Node.js API Gateway\n- Microservices for domain logic\n- PostgreSQL for persistent storage\n\n### Communication\n- REST APIs for synchronous calls\n- Message queue (RabbitMQ) for async processing\n- WebSocket for real-time updates\n\n> **Note:** The message queue implementation is pending review. See the related ADR for details.\n\n## Key Design Decisions\n\n1. **TypeScript over JavaScript** — Type safety reduces production bugs by approximately 40%\n2. **Microservices over Monolith** — Better scalability and team autonomy\n3. **PostgreSQL over NoSQL** — Data integrity and ACID compliance requirements\n\n## Data Flow\n\n```\nClient → API Gateway → Auth Service → Domain Service → Database\n                           ↓\n                    Message Queue → Event Handlers\n```\n\n## Performance Targets\n\n| Metric | Target | Current |\n|--------|--------|---------|\n| Response Time | <200ms | ~150ms |\n| Uptime | 99.9% | 99.95% |\n| Error Rate | <0.1% | 0.08% |\n\n## Security Considerations\n\n- All traffic encrypted via TLS 1.3\n- JWT-based authentication with 15-minute token expiry\n- Rate limiting at API Gateway level\n- Regular dependency audits with `npm audit`\n\n## Next Steps\n\n1. Complete the message queue integration\n2. Set up monitoring dashboard (Grafana + Prometheus)\n3. Conduct load testing before Q1 launch"
+  },
+  "validation": {
+    "blocking": [],
+    "lint": [],
+    "valid": true
+  }
+}

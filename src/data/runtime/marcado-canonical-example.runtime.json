@@ -1,0 +1,481 @@
+{
+  "anchors": [
+    {
+      "classification": "intro",
+      "document_id": "canonical-example",
+      "key": "struct:intro",
+      "local_anchor": "#struct:intro",
+      "namespace": "struct",
+      "qualified_anchor": "asg://docs/canonical-example#struct:intro",
+      "span": {
+        "end": 99,
+        "end_column": 1,
+        "end_line": 6,
+        "start": 26,
+        "start_column": 1,
+        "start_line": 4
+      },
+      "text": "\nThis example introduces semantic milestone markers for prose documents.\n"
+    },
+    {
+      "classification": "concept.semantic_markdown",
+      "document_id": "canonical-example",
+      "key": "sem:concept.semantic_markdown",
+      "local_anchor": "#sem:concept.semantic_markdown",
+      "namespace": "sem",
+      "qualified_anchor": "asg://docs/canonical-example#sem:concept.semantic_markdown",
+      "span": {
+        "end": 232,
+        "end_column": 1,
+        "end_line": 12,
+        "start": 101,
+        "start_column": 1,
+        "start_line": 8
+      },
+      "text": "\nSemantic Markdown ASG keeps Markdown as the authoring surface while\n\nsemantic markers define addressable ranges that can overlap.\n"
+    },
+    {
+      "classification": "function.definition",
+      "document_id": "canonical-example",
+      "key": "sem:function.definition",
+      "local_anchor": "#sem:function.definition",
+      "namespace": "sem",
+      "qualified_anchor": "asg://docs/canonical-example#sem:function.definition",
+      "span": {
+        "end": 288,
+        "end_column": 1,
+        "end_line": 14,
+        "start": 170,
+        "start_column": 1,
+        "start_line": 10
+      },
+      "text": "\nsemantic markers define addressable ranges that can overlap.\n\nThose ranges are later normalized into canonical JSON.\n"
+    },
+    {
+      "classification": "rationale.tree_overlap_limitation",
+      "document_id": "canonical-example",
+      "key": "rhet:rationale.tree_overlap_limitation",
+      "local_anchor": "#rhet:rationale.tree_overlap_limitation",
+      "namespace": "rhet",
+      "qualified_anchor": "asg://docs/canonical-example#rhet:rationale.tree_overlap_limitation",
+      "span": {
+        "end": 353,
+        "end_column": 1,
+        "end_line": 18,
+        "start": 290,
+        "start_column": 1,
+        "start_line": 16
+      },
+      "text": "\nPure trees cannot represent crossing semantic ranges cleanly.\n"
+    },
+    {
+      "classification": "decision.use_asg",
+      "document_id": "canonical-example",
+      "key": "rhet:decision.use_asg",
+      "local_anchor": "#rhet:decision.use_asg",
+      "namespace": "rhet",
+      "qualified_anchor": "asg://docs/canonical-example#rhet:decision.use_asg",
+      "span": {
+        "end": 433,
+        "end_column": 1,
+        "end_line": 22,
+        "start": 355,
+        "start_column": 1,
+        "start_line": 20
+      },
+      "text": "\nThe canonical representation should therefore be an Abstract Semantic Graph.\n"
+    }
+  ],
+  "asg_version": "0.1",
+  "diagnostics": [],
+  "document": {
+    "id": "canonical-example",
+    "title": "Semantic Markdown ASG — Canonical Example",
+    "type": "design_note",
+    "version": 0.1
+  },
+  "format": {
+    "name": "semantic-markdown-asg",
+    "version": 0.1
+  },
+  "graphs": {
+    "rhet": {
+      "edges": [
+        {
+          "from": "rhet:rationale.tree_overlap_limitation",
+          "to": "rhet:decision.use_asg",
+          "type": "justifies"
+        }
+      ]
+    }
+  },
+  "markers": [
+    {
+      "classification": "intro",
+      "facets": [
+        [
+          "intro"
+        ]
+      ],
+      "key": "struct:intro",
+      "kind": "open",
+      "namespace": "struct",
+      "source": {
+        "column": 1,
+        "end_offset": 47,
+        "line": 31,
+        "raw": "<!-- struct:intro -->",
+        "start_offset": 26
+      }
+    },
+    {
+      "classification": "intro",
+      "facets": [
+        [
+          "intro"
+        ]
+      ],
+      "key": "struct:intro",
+      "kind": "close",
+      "namespace": "struct",
+      "source": {
+        "column": 1,
+        "end_offset": 142,
+        "line": 33,
+        "raw": "<!-- /struct:intro -->",
+        "start_offset": 120
+      }
+    },
+    {
+      "classification": "concept.semantic_markdown",
+      "facets": [
+        [
+          "concept",
+          "semantic_markdown"
+        ]
+      ],
+      "key": "sem:concept.semantic_markdown",
+      "kind": "open",
+      "namespace": "sem",
+      "source": {
+        "column": 1,
+        "end_offset": 182,
+        "line": 35,
+        "raw": "<!-- sem:concept.semantic_markdown -->",
+        "start_offset": 144
+      }
+    },
+    {
+      "classification": "function.definition",
+      "facets": [
+        [
+          "function",
+          "definition"
+        ]
+      ],
+      "key": "sem:function.definition",
+      "kind": "open",
+      "namespace": "sem",
+      "source": {
+        "column": 1,
+        "end_offset": 283,
+        "line": 37,
+        "raw": "<!-- sem:function.definition -->",
+        "start_offset": 251
+      }
+    },
+    {
+      "classification": "concept.semantic_markdown",
+      "facets": [
+        [
+          "concept",
+          "semantic_markdown"
+        ]
+      ],
+      "key": "sem:concept.semantic_markdown",
+      "kind": "close",
+      "namespace": "sem",
+      "source": {
+        "column": 1,
+        "end_offset": 384,
+        "line": 39,
+        "raw": "<!-- /sem:concept.semantic_markdown -->",
+        "start_offset": 345
+      }
+    },
+    {
+      "classification": "function.definition",
+      "facets": [
+        [
+          "function",
+          "definition"
+        ]
+      ],
+      "key": "sem:function.definition",
+      "kind": "close",
+      "namespace": "sem",
+      "source": {
+        "column": 1,
+        "end_offset": 473,
+        "line": 41,
+        "raw": "<!-- /sem:function.definition -->",
+        "start_offset": 440
+      }
+    },
+    {
+      "classification": "rationale.tree_overlap_limitation",
+      "facets": [
+        [
+          "rationale",
+          "tree_overlap_limitation"
+        ]
+      ],
+      "key": "rhet:rationale.tree_overlap_limitation",
+      "kind": "open",
+      "namespace": "rhet",
+      "source": {
+        "column": 1,
+        "end_offset": 522,
+        "line": 43,
+        "raw": "<!-- rhet:rationale.tree_overlap_limitation -->",
+        "start_offset": 475
+      }
+    },
+    {
+      "classification": "rationale.tree_overlap_limitation",
+      "facets": [
+        [
+          "rationale",
+          "tree_overlap_limitation"
+        ]
+      ],
+      "key": "rhet:rationale.tree_overlap_limitation",
+      "kind": "close",
+      "namespace": "rhet",
+      "source": {
+        "column": 1,
+        "end_offset": 633,
+        "line": 45,
+        "raw": "<!-- /rhet:rationale.tree_overlap_limitation -->",
+        "start_offset": 585
+      }
+    },
+    {
+      "classification": "decision.use_asg",
+      "facets": [
+        [
+          "decision",
+          "use_asg"
+        ]
+      ],
+      "key": "rhet:decision.use_asg",
+      "kind": "open",
+      "namespace": "rhet",
+      "source": {
+        "column": 1,
+        "end_offset": 665,
+        "line": 47,
+        "raw": "<!-- rhet:decision.use_asg -->",
+        "start_offset": 635
+      }
+    },
+    {
+      "classification": "decision.use_asg",
+      "facets": [
+        [
+          "decision",
+          "use_asg"
+        ]
+      ],
+      "key": "rhet:decision.use_asg",
+      "kind": "close",
+      "namespace": "rhet",
+      "source": {
+        "column": 1,
+        "end_offset": 774,
+        "line": 49,
+        "raw": "<!-- /rhet:decision.use_asg -->",
+        "start_offset": 743
+      }
+    }
+  ],
+  "ranges": [
+    {
+      "classification": "intro",
+      "facets": [
+        [
+          "intro"
+        ]
+      ],
+      "key": "struct:intro",
+      "namespace": "struct",
+      "source": {
+        "close_line": 33,
+        "close_marker": "<!-- /struct:intro -->",
+        "open_line": 31,
+        "open_marker": "<!-- struct:intro -->"
+      },
+      "span": {
+        "end": 99,
+        "end_column": 1,
+        "end_line": 6,
+        "start": 26,
+        "start_column": 1,
+        "start_line": 4
+      },
+      "text": "\nThis example introduces semantic milestone markers for prose documents.\n"
+    },
+    {
+      "classification": "concept.semantic_markdown",
+      "facets": [
+        [
+          "concept",
+          "semantic_markdown"
+        ]
+      ],
+      "key": "sem:concept.semantic_markdown",
+      "namespace": "sem",
+      "source": {
+        "close_line": 39,
+        "close_marker": "<!-- /sem:concept.semantic_markdown -->",
+        "open_line": 35,
+        "open_marker": "<!-- sem:concept.semantic_markdown -->"
+      },
+      "span": {
+        "end": 232,
+        "end_column": 1,
+        "end_line": 12,
+        "start": 101,
+        "start_column": 1,
+        "start_line": 8
+      },
+      "text": "\nSemantic Markdown ASG keeps Markdown as the authoring surface while\n\nsemantic markers define addressable ranges that can overlap.\n"
+    },
+    {
+      "classification": "function.definition",
+      "facets": [
+        [
+          "function",
+          "definition"
+        ]
+      ],
+      "key": "sem:function.definition",
+      "namespace": "sem",
+      "source": {
+        "close_line": 41,
+        "close_marker": "<!-- /sem:function.definition -->",
+        "open_line": 37,
+        "open_marker": "<!-- sem:function.definition -->"
+      },
+      "span": {
+        "end": 288,
+        "end_column": 1,
+        "end_line": 14,
+        "start": 170,
+        "start_column": 1,
+        "start_line": 10
+      },
+      "text": "\nsemantic markers define addressable ranges that can overlap.\n\nThose ranges are later normalized into canonical JSON.\n"
+    },
+    {
+      "classification": "rationale.tree_overlap_limitation",
+      "facets": [
+        [
+          "rationale",
+          "tree_overlap_limitation"
+        ]
+      ],
+      "key": "rhet:rationale.tree_overlap_limitation",
+      "namespace": "rhet",
+      "source": {
+        "close_line": 45,
+        "close_marker": "<!-- /rhet:rationale.tree_overlap_limitation -->",
+        "open_line": 43,
+        "open_marker": "<!-- rhet:rationale.tree_overlap_limitation -->"
+      },
+      "span": {
+        "end": 353,
+        "end_column": 1,
+        "end_line": 18,
+        "start": 290,
+        "start_column": 1,
+        "start_line": 16
+      },
+      "text": "\nPure trees cannot represent crossing semantic ranges cleanly.\n"
+    },
+    {
+      "classification": "decision.use_asg",
+      "facets": [
+        [
+          "decision",
+          "use_asg"
+        ]
+      ],
+      "key": "rhet:decision.use_asg",
+      "namespace": "rhet",
+      "source": {
+        "close_line": 49,
+        "close_marker": "<!-- /rhet:decision.use_asg -->",
+        "open_line": 47,
+        "open_marker": "<!-- rhet:decision.use_asg -->"
+      },
+      "span": {
+        "end": 433,
+        "end_column": 1,
+        "end_line": 22,
+        "start": 355,
+        "start_column": 1,
+        "start_line": 20
+      },
+      "text": "\nThe canonical representation should therefore be an Abstract Semantic Graph.\n"
+    }
+  ],
+  "source": {
+    "body": "\n# Semantic Markdown ASG\n\n<!-- struct:intro -->\nThis example introduces semantic milestone markers for prose documents.\n<!-- /struct:intro -->\n\n<!-- sem:concept.semantic_markdown -->\nSemantic Markdown ASG keeps Markdown as the authoring surface while\n<!-- sem:function.definition -->\nsemantic markers define addressable ranges that can overlap.\n<!-- /sem:concept.semantic_markdown -->\nThose ranges are later normalized into canonical JSON.\n<!-- /sem:function.definition -->\n\n<!-- rhet:rationale.tree_overlap_limitation -->\nPure trees cannot represent crossing semantic ranges cleanly.\n<!-- /rhet:rationale.tree_overlap_limitation -->\n\n<!-- rhet:decision.use_asg -->\nThe canonical representation should therefore be an Abstract Semantic Graph.\n<!-- /rhet:decision.use_asg -->\n",
+    "frontmatter": {
+      "document": {
+        "id": "canonical-example",
+        "title": "Semantic Markdown ASG — Canonical Example",
+        "type": "design_note",
+        "version": 0.1
+      },
+      "format": {
+        "name": "semantic-markdown-asg",
+        "version": 0.1
+      },
+      "graphs": {
+        "rhet": {
+          "edges": [
+            {
+              "from": "rhet:rationale.tree_overlap_limitation",
+              "to": "rhet:decision.use_asg",
+              "type": "justifies"
+            }
+          ]
+        }
+      },
+      "namespaces": {
+        "rhet": {
+          "allow_crossing": true,
+          "projection": "graph",
+          "requires_addressable_nodes": true
+        },
+        "sem": {
+          "allow_crossing": true,
+          "projection": "taxonomy"
+        },
+        "struct": {
+          "allow_crossing": false,
+          "projection": "tree"
+        }
+      }
+    },
+    "path": null,
+    "plain_text": "\n# Semantic Markdown ASG\n\n\nThis example introduces semantic milestone markers for prose documents.\n\n\n\nSemantic Markdown ASG keeps Markdown as the authoring surface while\n\nsemantic markers define addressable ranges that can overlap.\n\nThose ranges are later normalized into canonical JSON.\n\n\n\nPure trees cannot represent crossing semantic ranges cleanly.\n\n\n\nThe canonical representation should therefore be an Abstract Semantic Graph.\n\n"
+  },
+  "validation": {
+    "blocking": [],
+    "lint": [],
+    "valid": true
+  }
+}
