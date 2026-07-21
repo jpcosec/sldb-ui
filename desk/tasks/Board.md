@@ -5,7 +5,6 @@ id: board-001
 scope: desk
 # List of task-xxx paths
 tasks:
-- desk/tasks/task-define-workspace-state-model-and-entry-actions.md
 - desk/tasks/task-simplify-the-first-screen-document-entry-flows.md
 - desk/tasks/task-formalize-the-marcado-adapter-interface.md
 - desk/tasks/task-preserve-runtime-refresh-and-degraded-fallback-behavior.md
@@ -47,7 +46,6 @@ Route only the currently necessary granular task set for turning the existing ap
 
 _Generated from the task references above._
 
-- Define workspace state model and entry actions [draft] - Make document/session state and top-level entry actions explicit so the rest of the UI can refactor around them safely.
 - Simplify the first-screen document entry flows [draft] - Present open file, upload, sample document, and draft continuation as obvious first actions in the entry surface.
 - Formalize the Marcado adapter interface [draft] - Expose a named Marcado adapter interface for parsing, runtime refresh, and interpreted document handoff.
 - Preserve runtime refresh and degraded fallback behavior [draft] - Keep runtime-backed refresh working while making fallback mode explicit and intentionally degraded.

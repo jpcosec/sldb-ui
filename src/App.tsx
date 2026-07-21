@@ -22,25 +22,30 @@ import {
 import { loadDocuments } from "./data/documents";
 import { parseMarcadoDocument, type MarcadoDocument, type MarkerRange } from "./lib/marcado";
 import { parseSourceWithRuntimeFallback } from "./lib/marcado-runtime";
+import {
+  basenameWithoutExtension,
+  createInitialWorkspaceDocumentStore,
+  createInitialWorkspaceEntries,
+  createInitialWorkspaceUiState,
+  createWorkspaceSlug,
+  findAllOccurrences,
+  getWorkspaceSource,
+  moveStoredDraft,
+  readStoredSource,
+  renameWorkspaceDocument,
+  resolveWorkspaceModel,
+  STORAGE_PREFIX,
+  type SelectionState,
+  type ViewMode,
+  type WorkspaceDocumentStore,
+  type WorkspaceEntry,
+  type WorkspaceUiState,
+  upsertWorkspaceDocument,
+  upsertWorkspaceDocuments,
+  upsertWorkspaceEntry,
+} from "./lib/workspace-state";
 
 const initialDocuments = loadDocuments();
-const STORAGE_PREFIX = "marcado-ui:source:";
-
-type ViewMode = "rendered" | "source";
-
-type WorkspaceEntry = {
-  slug: string;
-  initialSource: string;
-  fileName?: string;
-  filePath?: string;
-  origin: "bundled" | "opened" | "explored";
-};
-
-type SelectionState = {
-  start: number;
-  end: number;
-  text: string;
-};
 
 type FileTreeNode =
   | { kind: "folder"; name: string; path: string; children: FileTreeNode[] }
@@ -57,29 +62,69 @@ type FileTreeNode =
 
 export default function App() {
   const [workspaceEntries, setWorkspaceEntries] = useState<WorkspaceEntry[]>(() =>
-    initialDocuments.map((doc) => ({
-      slug: doc.slug,
-      initialSource: doc.source,
-      origin: "bundled",
-    }))
+    createInitialWorkspaceEntries(initialDocuments)
   );
   const [selectedSlug, setSelectedSlug] = useState(initialDocuments[0]?.slug ?? "");
-  const [docSources, setDocSources] = useState<Record<string, string>>(() => {
-    const entries = initialDocuments.map((doc) => [doc.slug, readStoredSource(doc.slug) || doc.source]);
-    return Object.fromEntries(entries);
-  });
-  const [docModels, setDocModels] = useState<Record<string, MarcadoDocument>>(() => {
-    const entries = initialDocuments.map((doc) => {
-      const storedSource = readStoredSource(doc.slug);
-      return [doc.slug, storedSource ? parseMarcadoDocument(doc.slug, storedSource) : doc] as const;
-    });
-    return Object.fromEntries(entries);
-  });
-  const [fileHandles, setFileHandles] = useState<Record<string, FileSystemFileHandle>>({});
-  const [viewMode, setViewMode] = useState<ViewMode>("rendered");
-  const [notice, setNotice] = useState<string>("");
-  const [selectionState, setSelectionState] = useState<SelectionState | null>(null);
-  const [markerFilter, setMarkerFilter] = useState<string[]>([]);
+  const [workspaceDocuments, setWorkspaceDocuments] = useState<WorkspaceDocumentStore>(() =>
+    createInitialWorkspaceDocumentStore(initialDocuments, readStoredSource)
+  );
+  const [workspaceUi, setWorkspaceUi] = useState<WorkspaceUiState>(() => createInitialWorkspaceUiState());
+
+  const { viewMode, notice, selectionState, markerFilter } = workspaceUi;
+
+  const setNotice = (nextNotice: string) => {
+    setWorkspaceUi((current) => ({ ...current, notice: nextNotice }));
+  };
+
+  const setViewMode = (nextViewMode: ViewMode) => {
+    setWorkspaceUi((current) => ({ ...current, viewMode: nextViewMode }));
+  };
+
+  const setSelectionState = (nextSelectionState: SelectionState | null) => {
+    setWorkspaceUi((current) => ({ ...current, selectionState: nextSelectionState }));
+  };
+
+  const setMarkerFilter = (nextMarkerFilter: string[] | ((current: string[]) => string[])) => {
+    setWorkspaceUi((current) => ({
+      ...current,
+      markerFilter:
+        typeof nextMarkerFilter === "function"
+          ? nextMarkerFilter(current.markerFilter)
+          : nextMarkerFilter,
+    }));
+  };
+
+  const activateWorkspaceEntry = ({
+    entry,
+    source,
+    model,
+    fileHandle,
+    viewMode: nextViewMode = "source",
+    notice: nextNotice,
+  }: {
+    entry: WorkspaceEntry;
+    source: string;
+    model: MarcadoDocument;
+    fileHandle?: FileSystemFileHandle;
+    viewMode?: ViewMode;
+    notice: string;
+  }) => {
+    setWorkspaceEntries((current) => upsertWorkspaceEntry(current, entry));
+    setWorkspaceDocuments((current) =>
+      upsertWorkspaceDocument(current, {
+        slug: entry.slug,
+        source,
+        model,
+        fileHandle,
+      })
+    );
+    setSelectedSlug(entry.slug);
+    setWorkspaceUi((current) => ({
+      ...current,
+      viewMode: nextViewMode,
+      notice: nextNotice,
+    }));
+  };
 
   useEffect(() => {
     if (!selectedSlug && initialDocuments[0]) {
@@ -88,11 +133,8 @@ export default function App() {
   }, [selectedSlug]);
 
   const documents = useMemo(
-    () =>
-      workspaceEntries.map(
-        (entry) => docModels[entry.slug] ?? parseMarcadoDocument(entry.slug, docSources[entry.slug] ?? entry.initialSource)
-      ),
-    [docModels, docSources, workspaceEntries]
+    () => workspaceEntries.map((entry) => resolveWorkspaceModel(workspaceDocuments, entry.slug, entry.initialSource)),
+    [workspaceDocuments, workspaceEntries]
   );
 
   const selectedDoc = useMemo(
@@ -113,8 +155,13 @@ export default function App() {
 
   const handleSourceChange = (value: string) => {
     if (!selectedDoc) return;
-    setDocSources((current) => ({ ...current, [selectedDoc.slug]: value }));
-    setDocModels((current) => ({ ...current, [selectedDoc.slug]: parseMarcadoDocument(selectedDoc.slug, value) }));
+    setWorkspaceDocuments((current) =>
+      upsertWorkspaceDocument(current, {
+        slug: selectedDoc.slug,
+        source: value,
+        model: parseMarcadoDocument(selectedDoc.slug, value),
+      })
+    );
   };
 
   const handleAddMarker = (namespace: string, classification: string) => {
@@ -144,7 +191,7 @@ export default function App() {
 
     const startIndex = selectedDoc.bodySourceStart + startInBody;
     const endIndex = selectedDoc.bodySourceStart + endInBody;
-    const currentSource = docSources[selectedDoc.slug] ?? selectedDoc.source;
+    const currentSource = getWorkspaceSource(workspaceDocuments, selectedDoc.slug, selectedDoc.source);
     const openMarker = `<!-- ${key} -->`;
     const closeMarker = `<!-- /${key} -->`;
     const nextSource =
@@ -154,8 +201,13 @@ export default function App() {
       closeMarker +
       currentSource.slice(endIndex);
 
-    setDocSources((current) => ({ ...current, [selectedDoc.slug]: nextSource }));
-    setDocModels((current) => ({ ...current, [selectedDoc.slug]: parseMarcadoDocument(selectedDoc.slug, nextSource) }));
+    setWorkspaceDocuments((current) =>
+      upsertWorkspaceDocument(current, {
+        slug: selectedDoc.slug,
+        source: nextSource,
+        model: parseMarcadoDocument(selectedDoc.slug, nextSource),
+      })
+    );
     setSelectionState(null);
     window.getSelection()?.removeAllRanges();
     setNotice(`Added marker ${key}`);
@@ -163,22 +215,31 @@ export default function App() {
 
   const handleRefreshRuntime = async () => {
     if (!selectedDoc) return;
-    const source = docSources[selectedDoc.slug] ?? selectedDoc.source;
+    const source = getWorkspaceSource(workspaceDocuments, selectedDoc.slug, selectedDoc.source);
     const runtimeDoc = await parseSourceWithRuntimeFallback(selectedDoc.slug, source, selectedEntry?.filePath);
-    setDocModels((current) => ({ ...current, [selectedDoc.slug]: runtimeDoc }));
+    setWorkspaceDocuments((current) =>
+      upsertWorkspaceDocument(current, {
+        slug: selectedDoc.slug,
+        source,
+        model: runtimeDoc,
+      })
+    );
     setNotice(`Refreshed ${selectedDoc.id} from Marcado runtime`);
   };
 
   const handleSaveDraft = () => {
     if (!selectedDoc) return;
-    localStorage.setItem(`${STORAGE_PREFIX}${selectedDoc.slug}`, docSources[selectedDoc.slug] ?? selectedDoc.source);
+    localStorage.setItem(
+      `${STORAGE_PREFIX}${selectedDoc.slug}`,
+      getWorkspaceSource(workspaceDocuments, selectedDoc.slug, selectedDoc.source)
+    );
     setNotice(`Saved draft for ${selectedDoc.id}`);
   };
 
   const handleSaveFile = async () => {
     if (!selectedDoc) return;
 
-    let fileHandle = fileHandles[selectedDoc.slug];
+    let fileHandle = workspaceDocuments.fileHandles[selectedDoc.slug];
     if (!fileHandle && typeof window !== "undefined" && window.showSaveFilePicker) {
       fileHandle = await window.showSaveFilePicker({
         suggestedName: selectedEntry?.fileName || `${selectedDoc.slug.replace(/^file:/, "")}.md`,
@@ -187,7 +248,14 @@ export default function App() {
           accept: { "text/markdown": [".md"], "text/plain": [".md", ".txt"] },
         }],
       });
-      setFileHandles((current) => ({ ...current, [selectedDoc.slug]: fileHandle! }));
+      setWorkspaceDocuments((current) =>
+        upsertWorkspaceDocument(current, {
+          slug: selectedDoc.slug,
+          source: getWorkspaceSource(current, selectedDoc.slug, selectedDoc.source),
+          model: current.models[selectedDoc.slug] ?? selectedDoc,
+          fileHandle: fileHandle!,
+        })
+      );
     }
 
     if (!fileHandle) {
@@ -197,7 +265,7 @@ export default function App() {
     }
 
     const writable = await fileHandle.createWritable();
-    await writable.write(docSources[selectedDoc.slug] ?? selectedDoc.source);
+    await writable.write(getWorkspaceSource(workspaceDocuments, selectedDoc.slug, selectedDoc.source));
     await writable.close();
     setNotice(`Saved file ${fileHandle.name}`);
   };
@@ -209,21 +277,31 @@ export default function App() {
       setNotice(`No saved draft found for ${selectedDoc.id}`);
       return;
     }
-    setDocSources((current) => ({ ...current, [selectedDoc.slug]: stored }));
-    setDocModels((current) => ({ ...current, [selectedDoc.slug]: parseMarcadoDocument(selectedDoc.slug, stored) }));
+    setWorkspaceDocuments((current) =>
+      upsertWorkspaceDocument(current, {
+        slug: selectedDoc.slug,
+        source: stored,
+        model: parseMarcadoDocument(selectedDoc.slug, stored),
+      })
+    );
     setNotice(`Loaded saved draft for ${selectedDoc.id}`);
   };
 
   const handleReset = () => {
     if (!selectedDoc || !selectedEntry) return;
-    setDocSources((current) => ({ ...current, [selectedDoc.slug]: selectedEntry.initialSource }));
-    setDocModels((current) => ({ ...current, [selectedDoc.slug]: parseMarcadoDocument(selectedDoc.slug, selectedEntry.initialSource) }));
+    setWorkspaceDocuments((current) =>
+      upsertWorkspaceDocument(current, {
+        slug: selectedDoc.slug,
+        source: selectedEntry.initialSource,
+        model: parseMarcadoDocument(selectedDoc.slug, selectedEntry.initialSource),
+      })
+    );
     setNotice(`Reset ${selectedDoc.id} to original source`);
   };
 
   const handleDownload = () => {
     if (!selectedDoc) return;
-    const blob = new Blob([docSources[selectedDoc.slug] ?? selectedDoc.source], {
+    const blob = new Blob([getWorkspaceSource(workspaceDocuments, selectedDoc.slug, selectedDoc.source)], {
       type: "text/markdown;charset=utf-8",
     });
     const url = URL.createObjectURL(blob);
@@ -242,18 +320,18 @@ export default function App() {
     const slug = createWorkspaceSlug(file.name);
     const model = await parseSourceWithRuntimeFallback(slug, text, file.name);
 
-    setWorkspaceEntries((current) => upsertWorkspaceEntry(current, {
-      slug,
-      initialSource: text,
-      fileName: file.name,
-      filePath: file.name,
-      origin: "opened",
-    }));
-    setDocSources((current) => ({ ...current, [slug]: text }));
-    setDocModels((current) => ({ ...current, [slug]: model }));
-    setSelectedSlug(slug);
-    setViewMode("source");
-    setNotice(`Opened ${file.name}`);
+    activateWorkspaceEntry({
+      entry: {
+        slug,
+        initialSource: text,
+        fileName: file.name,
+        filePath: file.name,
+        origin: "opened",
+      },
+      source: text,
+      model,
+      notice: `Opened ${file.name}`,
+    });
     event.target.value = "";
   };
 
@@ -273,19 +351,19 @@ export default function App() {
     const slug = createWorkspaceSlug(file.name);
     const model = await parseSourceWithRuntimeFallback(slug, text, file.name);
 
-    setWorkspaceEntries((current) => upsertWorkspaceEntry(current, {
-      slug,
-      initialSource: text,
-      fileName: file.name,
-      filePath: file.name,
-      origin: "opened",
-    }));
-    setDocSources((current) => ({ ...current, [slug]: text }));
-    setDocModels((current) => ({ ...current, [slug]: model }));
-    setFileHandles((current) => ({ ...current, [slug]: fileHandle }));
-    setSelectedSlug(slug);
-    setViewMode("source");
-    setNotice(`Opened ${file.name}`);
+    activateWorkspaceEntry({
+      entry: {
+        slug,
+        initialSource: text,
+        fileName: file.name,
+        filePath: file.name,
+        origin: "opened",
+      },
+      source: text,
+      model,
+      fileHandle,
+      notice: `Opened ${file.name}`,
+    });
   };
 
   const handleExploreFiles = async () => {
@@ -314,21 +392,17 @@ export default function App() {
       for (const entry of nextEntries) updated = upsertWorkspaceEntry(updated, entry);
       return updated;
     });
-    setDocSources((current) => {
-      const next = { ...current };
-      for (const entry of nextEntries) next[entry.slug] = entry.initialSource;
-      return next;
-    });
-    setDocModels((current) => {
-      const next = { ...current };
-      for (const model of nextModels) next[model.slug] = model;
-      return next;
-    });
-    setFileHandles((current) => {
-      const next = { ...current };
-      for (const file of discovered) next[createWorkspaceSlug(file.path)] = file.handle;
-      return next;
-    });
+    setWorkspaceDocuments((current) =>
+      upsertWorkspaceDocuments(
+        current,
+        nextEntries.map((entry, index) => ({
+          slug: entry.slug,
+          source: entry.initialSource,
+          model: nextModels[index],
+          fileHandle: discovered[index]?.handle,
+        }))
+      )
+    );
     setSelectedSlug(nextEntries[0].slug);
     setNotice(`Loaded ${discovered.length} markdown file(s) from ${directoryHandle.name}`);
   };
@@ -338,18 +412,18 @@ export default function App() {
     if (!requestedPath) return;
     const slug = createWorkspaceSlug(requestedPath);
     const source = `---\ndocument:\n  id: ${basenameWithoutExtension(requestedPath)}\n  type: note\n  title: ${basenameWithoutExtension(requestedPath)}\n---\n\n# ${basenameWithoutExtension(requestedPath)}\n`;
-    setWorkspaceEntries((current) => upsertWorkspaceEntry(current, {
-      slug,
-      initialSource: source,
-      fileName: requestedPath.split("/").pop() || requestedPath,
-      filePath: requestedPath,
-      origin: "opened",
-    }));
-    setDocSources((current) => ({ ...current, [slug]: source }));
-    setDocModels((current) => ({ ...current, [slug]: parseMarcadoDocument(slug, source) }));
-    setSelectedSlug(slug);
-    setViewMode("source");
-    setNotice(`Created ${requestedPath}`);
+    activateWorkspaceEntry({
+      entry: {
+        slug,
+        initialSource: source,
+        fileName: requestedPath.split("/").pop() || requestedPath,
+        filePath: requestedPath,
+        origin: "opened",
+      },
+      source,
+      model: parseMarcadoDocument(slug, source),
+      notice: `Created ${requestedPath}`,
+    });
   };
 
   const handleRenameFile = () => {
@@ -357,29 +431,21 @@ export default function App() {
     const nextPath = window.prompt("Rename file", selectedEntry.filePath || selectedEntry.fileName || selectedDoc.slug.replace(/^file:/, ""));
     if (!nextPath || nextPath === (selectedEntry.filePath || selectedEntry.fileName)) return;
     const nextSlug = createWorkspaceSlug(nextPath);
-    const source = docSources[selectedDoc.slug] ?? selectedDoc.source;
+    const source = getWorkspaceSource(workspaceDocuments, selectedDoc.slug, selectedDoc.source);
 
     setWorkspaceEntries((current) => current.map((entry) =>
       entry.slug === selectedEntry.slug
         ? { ...entry, slug: nextSlug, fileName: nextPath.split("/").pop() || nextPath, filePath: nextPath }
         : entry
     ));
-    setDocSources((current) => {
-      const next = { ...current, [nextSlug]: source };
-      delete next[selectedEntry.slug];
-      return next;
-    });
-    setFileHandles((current) => {
-      if (!current[selectedEntry.slug]) return current;
-      const next = { ...current, [nextSlug]: current[selectedEntry.slug] };
-      delete next[selectedEntry.slug];
-      return next;
-    });
-    setDocModels((current) => {
-      const next = { ...current, [nextSlug]: parseMarcadoDocument(nextSlug, source) };
-      delete next[selectedEntry.slug];
-      return next;
-    });
+    setWorkspaceDocuments((current) =>
+      renameWorkspaceDocument(current, selectedEntry.slug, {
+        slug: nextSlug,
+        source,
+        model: parseMarcadoDocument(nextSlug, source),
+        fileHandle: current.fileHandles[selectedEntry.slug],
+      })
+    );
     moveStoredDraft(selectedEntry.slug, nextSlug);
     setSelectedSlug(nextSlug);
     setNotice(`Renamed to ${nextPath}`);
@@ -387,7 +453,7 @@ export default function App() {
 
   const handleDeleteMarker = (marker: MarkerRange) => {
     if (!selectedDoc) return;
-    const currentSource = docSources[selectedDoc.slug] ?? selectedDoc.source;
+    const currentSource = getWorkspaceSource(workspaceDocuments, selectedDoc.slug, selectedDoc.source);
     const body = currentSource.slice(selectedDoc.bodySourceStart);
     const nextBody =
       body.slice(0, marker.closeMarkerStart) +
@@ -398,8 +464,13 @@ export default function App() {
       nextBody.slice(0, adjustedOpenStart) +
       nextBody.slice(adjustedOpenEnd);
     const nextSource = currentSource.slice(0, selectedDoc.bodySourceStart) + finalBody;
-    setDocSources((current) => ({ ...current, [selectedDoc.slug]: nextSource }));
-    setDocModels((current) => ({ ...current, [selectedDoc.slug]: parseMarcadoDocument(selectedDoc.slug, nextSource) }));
+    setWorkspaceDocuments((current) =>
+      upsertWorkspaceDocument(current, {
+        slug: selectedDoc.slug,
+        source: nextSource,
+        model: parseMarcadoDocument(selectedDoc.slug, nextSource),
+      })
+    );
     setNotice(`Deleted marker ${marker.key}`);
   };
 
@@ -407,7 +478,7 @@ export default function App() {
     if (!selectedDoc) return;
     const nextKey = window.prompt("Rename marker key", marker.key);
     if (!nextKey || nextKey === marker.key) return;
-    const currentSource = docSources[selectedDoc.slug] ?? selectedDoc.source;
+    const currentSource = getWorkspaceSource(workspaceDocuments, selectedDoc.slug, selectedDoc.source);
     const body = currentSource.slice(selectedDoc.bodySourceStart);
     const openRaw = body.slice(marker.openMarkerStart, marker.openMarkerEnd);
     const closeRaw = body.slice(marker.closeMarkerStart, marker.closeMarkerEnd);
@@ -420,14 +491,19 @@ export default function App() {
       nextCloseRaw +
       body.slice(marker.closeMarkerEnd);
     const nextSource = currentSource.slice(0, selectedDoc.bodySourceStart) + nextBody;
-    setDocSources((current) => ({ ...current, [selectedDoc.slug]: nextSource }));
-    setDocModels((current) => ({ ...current, [selectedDoc.slug]: parseMarcadoDocument(selectedDoc.slug, nextSource) }));
+    setWorkspaceDocuments((current) =>
+      upsertWorkspaceDocument(current, {
+        slug: selectedDoc.slug,
+        source: nextSource,
+        model: parseMarcadoDocument(selectedDoc.slug, nextSource),
+      })
+    );
     setNotice(`Renamed marker to ${nextKey}`);
   };
 
   useEffect(() => {
     setSelectionState(null);
-  }, [selectedSlug, viewMode, docSources]);
+  }, [selectedSlug, viewMode, workspaceDocuments.sources]);
 
   useEffect(() => {
     setMarkerFilter([]);
@@ -468,7 +544,7 @@ export default function App() {
           {selectedDoc ? (
             <DocumentWorkspace
               document={selectedDoc}
-              sourceValue={docSources[selectedDoc.slug] ?? selectedDoc.source}
+              sourceValue={getWorkspaceSource(workspaceDocuments, selectedDoc.slug, selectedDoc.source)}
               viewMode={viewMode}
               notice={notice}
               fileLabel={selectedEntry?.filePath ?? selectedEntry?.fileName ?? null}
@@ -1141,18 +1217,6 @@ function supportsFileSystemAccess(): boolean {
   return typeof window !== "undefined" && !!window.showOpenFilePicker && !!window.showDirectoryPicker;
 }
 
-function createWorkspaceSlug(seed: string): string {
-  return `file:${seed.replace(/[^a-zA-Z0-9._/-]+/g, "-")}`;
-}
-
-function upsertWorkspaceEntry(current: WorkspaceEntry[], entry: WorkspaceEntry): WorkspaceEntry[] {
-  const existingIndex = current.findIndex((item) => item.slug === entry.slug);
-  if (existingIndex === -1) return [...current, entry];
-  const next = [...current];
-  next[existingIndex] = entry;
-  return next;
-}
-
 async function collectMarkdownFiles(
   directoryHandle: FileSystemDirectoryHandle,
   prefix = directoryHandle.name
@@ -1174,42 +1238,3 @@ async function collectMarkdownFiles(
   return discovered;
 }
 
-function basenameWithoutExtension(path: string): string {
-  const last = path.split("/").pop() || path;
-  return last.replace(/\.[^.]+$/, "");
-}
-
-function moveStoredDraft(fromSlug: string, toSlug: string): void {
-  try {
-    const value = localStorage.getItem(`${STORAGE_PREFIX}${fromSlug}`);
-    if (value != null) {
-      localStorage.setItem(`${STORAGE_PREFIX}${toSlug}`, value);
-      localStorage.removeItem(`${STORAGE_PREFIX}${fromSlug}`);
-    }
-  } catch {
-    // ignore storage failures
-  }
-}
-
-function findAllOccurrences(text: string, query: string): number[] {
-  if (!query) return [];
-  const matches: number[] = [];
-  let startIndex = 0;
-
-  while (startIndex <= text.length) {
-    const index = text.indexOf(query, startIndex);
-    if (index === -1) break;
-    matches.push(index);
-    startIndex = index + query.length;
-  }
-
-  return matches;
-}
-
-function readStoredSource(slug: string): string {
-  try {
-    return localStorage.getItem(`${STORAGE_PREFIX}${slug}`) ?? "";
-  } catch {
-    return "";
-  }
-}
