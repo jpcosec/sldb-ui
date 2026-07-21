@@ -18,6 +18,7 @@ import {
   FiX,
 } from "react-icons/fi";
 import { type MarcadoDocument, type MarkerRange } from "../lib/marcado";
+import { type SldbValidationSummary } from "../lib/sldb-adapter";
 import { type SelectionState, type ViewMode } from "../lib/workspace-state";
 import { WorkspaceTopToolbar } from "./workspace-shell";
 
@@ -30,6 +31,7 @@ export function DocumentWorkspace({
   notice,
   fileLabel,
   interpretationMode,
+  validationSummary,
   selectionState,
   canUseNativeFiles,
   markerFilter,
@@ -44,6 +46,7 @@ export function DocumentWorkspace({
   onRenameMarker,
   onDeleteMarker,
   onRefreshRuntime,
+  onCheckSldbValidation,
   onSaveDraft,
   onSaveFile,
   onLoad,
@@ -59,6 +62,7 @@ export function DocumentWorkspace({
   notice: string;
   fileLabel: string | null;
   interpretationMode: DocumentInterpretationMode;
+  validationSummary: SldbValidationSummary | null;
   selectionState: SelectionState | null;
   canUseNativeFiles: boolean;
   markerFilter: string[];
@@ -73,6 +77,7 @@ export function DocumentWorkspace({
   onRenameMarker: (marker: MarkerRange) => void;
   onDeleteMarker: (marker: MarkerRange) => void;
   onRefreshRuntime: () => void | Promise<void>;
+  onCheckSldbValidation: () => void;
   onSaveDraft: () => void;
   onSaveFile: () => void | Promise<void>;
   onLoad: () => void;
@@ -143,6 +148,7 @@ export function DocumentWorkspace({
             <DocumentToolbarActions
               canUseNativeFiles={canUseNativeFiles}
               onRefreshRuntime={onRefreshRuntime}
+              onCheckSldbValidation={onCheckSldbValidation}
               onSaveDraft={onSaveDraft}
               onLoad={onLoad}
               onSaveFile={onSaveFile}
@@ -172,6 +178,7 @@ export function DocumentWorkspace({
 
       <StructureInspectorSurface
         document={document}
+        validationSummary={validationSummary}
         markerFilter={markerFilter}
         visibleMarkers={visibleMarkers}
         onToggleMarkerFilter={onToggleMarkerFilter}
@@ -205,6 +212,7 @@ function DocumentViewSwitcher({
 function DocumentToolbarActions({
   canUseNativeFiles,
   onRefreshRuntime,
+  onCheckSldbValidation,
   onSaveDraft,
   onLoad,
   onSaveFile,
@@ -216,6 +224,7 @@ function DocumentToolbarActions({
 }: {
   canUseNativeFiles: boolean;
   onRefreshRuntime: () => void | Promise<void>;
+  onCheckSldbValidation: () => void;
   onSaveDraft: () => void;
   onLoad: () => void;
   onSaveFile: () => void | Promise<void>;
@@ -228,6 +237,7 @@ function DocumentToolbarActions({
   return (
     <>
       <ActionButton onClick={onRefreshRuntime} icon={<FiGitBranch />} label="Refresh runtime" />
+      <ActionButton onClick={onCheckSldbValidation} icon={<FiFileText />} label="Check SLDB validation" />
       <ActionButton onClick={onSaveDraft} icon={<FiSave />} label="Save draft" />
       <ActionButton onClick={onLoad} icon={<FiUpload />} label="Load draft" />
       <ActionButton onClick={onSaveFile} icon={<FiSave />} label="Save file" />
@@ -294,6 +304,7 @@ function SourceEditorSurface({
 
 function StructureInspectorSurface({
   document,
+  validationSummary,
   markerFilter,
   visibleMarkers,
   onToggleMarkerFilter,
@@ -302,6 +313,7 @@ function StructureInspectorSurface({
   onDeleteMarker,
 }: {
   document: MarcadoDocument;
+  validationSummary: SldbValidationSummary | null;
   markerFilter: string[];
   visibleMarkers: MarkerRange[];
   onToggleMarkerFilter: (namespace: string) => void;
@@ -312,6 +324,8 @@ function StructureInspectorSurface({
   return (
     <aside className="overflow-y-auto border-t border-border bg-surface xl:border-t-0 xl:border-l">
       <div className="space-y-5 p-5">
+        {validationSummary ? <SldbValidationCard validationSummary={validationSummary} /> : null}
+
         <InfoCard icon={<FiFileText />} title="Document">
           <KeyValue label="ID" value={document.id} />
           <KeyValue label="Type" value={document.type} />
@@ -483,6 +497,71 @@ function UploadActionButton({ onChange }: { onChange: React.ChangeEventHandler<H
         onChange={onChange}
       />
     </label>
+  );
+}
+
+function SldbValidationCard({
+  validationSummary,
+}: {
+  validationSummary: SldbValidationSummary;
+}) {
+  return (
+    <InfoCard icon={<FiFileText />} title="SLDB validation">
+      <div className="space-y-3">
+        <div className="rounded-2xl border border-border bg-background p-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-medium text-foreground">{validationSummary.contractLabel}</div>
+              <div className="mt-1 text-xs text-muted">Provenance: {validationSummary.provenance}</div>
+            </div>
+            <ValidationStateBadge state={validationSummary.state} />
+          </div>
+        </div>
+
+        {validationSummary.blockingIssues.length > 0 ? (
+          <div className="space-y-2">
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted">Blocking issues</div>
+            <ul className="space-y-2 text-sm text-warning">
+              {validationSummary.blockingIssues.map((issue) => (
+                <li key={issue} className="rounded-xl border border-warning/20 bg-warning/10 p-3">
+                  {issue}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <EmptyState text="No local structural blockers are currently visible through the SLDB seam." />
+        )}
+
+        {validationSummary.advisoryNotes.length > 0 ? (
+          <div className="space-y-2">
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted">Advisories</div>
+            <ul className="space-y-2 text-sm text-muted">
+              {validationSummary.advisoryNotes.map((note) => (
+                <li key={note} className="rounded-xl border border-border bg-surface p-3">
+                  {note}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+      </div>
+    </InfoCard>
+  );
+}
+
+function ValidationStateBadge({ state }: { state: SldbValidationSummary["state"] }) {
+  const tone =
+    state === "ready"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      : "border-amber-200 bg-amber-50 text-amber-700";
+  const label = state === "ready" ? "Ready" : "Needs attention";
+
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide ${tone}`}>
+      {label}
+    </span>
   );
 }
 

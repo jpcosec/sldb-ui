@@ -16,6 +16,9 @@ describe('App Integration — Marcado workspace flows', () => {
     expect(screen.getAllByText('canonical-example').length).toBeGreaterThan(0);
     expect(screen.getByText('design_note')).toBeInTheDocument();
     expect(screen.getByText('struct:intro')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /sldb validation/i })).toBeInTheDocument();
+    expect(screen.getByText(/design_note contract/i)).toBeInTheDocument();
+    expect(screen.getByText(/^ready$/i)).toBeInTheDocument();
   });
 
   it('switches between rendered and source views', async () => {
@@ -28,6 +31,15 @@ describe('App Integration — Marcado workspace flows', () => {
     await user.click(screen.getByRole('button', { name: /rendered/i }));
     expect(screen.queryByLabelText(/marcado source editor/i)).not.toBeInTheDocument();
     expect(screen.getAllByText(/pure trees cannot represent crossing semantic ranges cleanly/i).length).toBeGreaterThan(0);
+  });
+
+  it('exposes an explicit SLDB validation affordance from the toolbar', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: /check sldb validation/i }));
+
+    expect(screen.getByText(/sldb validation seam found no local structural blockers for canonical-example/i)).toBeInTheDocument();
   });
 
   it('creates a new workspace file and preserves edits after rename', async () => {

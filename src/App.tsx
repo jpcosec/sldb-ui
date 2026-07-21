@@ -6,6 +6,7 @@ import { WorkspaceMain, WorkspaceShell, WorkspaceSidebar, WorkspaceSidebarHeader
 import { loadDocuments } from "./data/documents";
 import { marcadoAdapter } from "./lib/marcado-adapter";
 import { type MarcadoDocument, type MarkerRange } from "./lib/marcado";
+import { sldbAdapter } from "./lib/sldb-adapter";
 import {
   basenameWithoutExtension,
   createInitialWorkspaceDocumentStore,
@@ -162,6 +163,19 @@ export default function App() {
 
   const selectedDocumentMode = selectedDoc ? (documentModes[selectedDoc.slug] ?? "local") : "local";
 
+  const selectedValidationSummary = useMemo(
+    () =>
+      selectedDoc
+        ? sldbAdapter.inspectValidation({
+            document: selectedDoc,
+            interpretationMode: selectedDocumentMode,
+            origin: selectedEntry?.origin,
+            filePath: selectedEntry?.filePath,
+          })
+        : null,
+    [selectedDoc, selectedDocumentMode, selectedEntry?.filePath, selectedEntry?.origin]
+  );
+
   const handleSourceChange = (value: string) => {
     if (!selectedDoc) return;
     setWorkspaceDocuments((current) =>
@@ -236,6 +250,16 @@ export default function App() {
       runtimeDoc.mode === "runtime"
         ? `Refreshed ${selectedDoc.id} from Marcado runtime`
         : `Marcado runtime unavailable; refreshed ${selectedDoc.id} with degraded fallback parsing`
+    );
+  };
+
+  const handleCheckSldbValidation = () => {
+    if (!selectedDoc || !selectedValidationSummary) return;
+
+    setNotice(
+      selectedValidationSummary.state === "ready"
+        ? `SLDB validation seam found no local structural blockers for ${selectedDoc.id}`
+        : `SLDB validation seam found ${selectedValidationSummary.blockingIssues.length} structural blocker(s) for ${selectedDoc.id}`
     );
   };
 
@@ -692,6 +716,7 @@ export default function App() {
               notice={notice}
               fileLabel={selectedEntry?.filePath ?? selectedEntry?.fileName ?? null}
               interpretationMode={selectedDocumentMode}
+              validationSummary={selectedValidationSummary}
               selectionState={selectionState}
               canUseNativeFiles={canUseNativeFiles}
               markerFilter={markerFilter}
@@ -710,6 +735,7 @@ export default function App() {
               onRenameMarker={handleRenameMarker}
               onDeleteMarker={handleDeleteMarker}
               onRefreshRuntime={handleRefreshRuntime}
+              onCheckSldbValidation={handleCheckSldbValidation}
               onSaveDraft={handleSaveDraft}
               onSaveFile={handleSaveFile}
               onLoad={handleLoad}
