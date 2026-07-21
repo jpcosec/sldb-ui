@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SLDB UI View Matrix</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        background: white;
+        font-family: system-ui, sans-serif;
+      }
+      #vis {
+        width: fit-content;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  </head>
+  <body>
+    <div id="vis"></div>
+    <script>
+      const spec = {
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "description": "SLDB UI View Matrix",
+  "width": 2200,
+  "height": 566,
+  "padding": 5,
+  "signals": [
+    {
+      "name": "left",
+      "value": 220
+    },
+    {
+      "name": "top",
+      "value": 70
+    },
+    {
+      "name": "cellWidth",
+      "value": 140
+    },
+    {
+      "name": "rowHeight",
+      "value": 34
+    },
+    {
+      "name": "barPadding",
+      "value": 6
+    }
+  ],
+  "data": [
+    {
+      "name": "stages",
+      "values": [
+        {
+          "id": "start",
+          "index": 0,
+          "label": "start",
+          "view": "Onboarding"
+        },
+        {
+          "id": "open-doc",
+          "index": 1,
+          "label": "open-doc",
+          "view": "Onboarding"
+        },
+        {
+          "id": "sample-doc",
+          "index": 2,
+          "label": "sample-doc",
+          "view": "Onboarding"
+        },
+        {
+          "id": "navigate",
+          "index": 3,
+          "label": "navigate",
+          "view": "Editing Workspace"
+        },
+        {
+          "id": "source",
+          "index": 4,
+          "label": "source",
+          "view": "Editing Workspace"
+        },
+        {
+          "id": "rendered",
+          "index": 5,
+          "label": "rendered",
+          "view": "Editing Workspace"
+        },
+        {
+          "id": "inspect",
+          "index": 6,
+          "label": "inspect",
+          "view": "Editing Workspace"
+        },
+        {
+          "id": "act",
+          "index": 7,
+          "label": "act",
+          "view": "Editing Workspace"
+        },
+        {
+          "id": "draft",
+          "index": 8,
+          "label": "draft",
+          "view": "Persistence"
+        },
+        {
+          "id": "save-file",
+          "index": 9,
+          "label": "save-file",
+          "view": "Persistence"
+        },
+        {
+          "id": "export",
+          "index": 10,
+          "label": "export",
+          "view": "Persistence"
+        },
+        {
+          "id": "refresh-runtime",
+          "index": 11,
+          "label": "refresh-runtime",
+          "view": "Integration"
+        },
+        {
+          "id": "validate-doc",
+          "index": 12,
+          "label": "validate-doc",
+          "view": "Integration"
+        },
+        {
+          "id": "review-diff",
+          "index": 13,
+          "label": "review-diff",
+          "view": "Integration"
+        }
+      ]
+    },
+    {
+      "name": "views",
+      "source": "stages",
+      "transform": [
+        {
+          "type": "aggregate",
+          "groupby": [
+            "view"
+          ],
+          "fields": [
+            "index",
+            "index"
+          ],
+          "ops": [
+            "min",
+            "max"
+          ],
+          "as": [
+            "minIdx",
+            "maxIdx"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "viewBoundaries",
+      "source": "views",
+      "transform": [
+        {
+          "type": "formula",
+          "expr": "[datum.minIdx, datum.maxIdx + 1]",
+          "as": "indices"
+        },
+        {
+          "type": "flatten",
+          "fields": [
+            "indices"
+          ]
+        },
+        {
+          "type": "aggregate",
+          "groupby": [
+            "indices"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "stageBoundaries",
+      "values": [
+        {
+          "index": 0
+        },
+        {
+          "index": 1
+        },
+        {
+          "index": 2
+        },
+        {
+          "index": 3
+        },
+        {
+          "index": 4
+        },
+        {
+          "index": 5
+        },
+        {
+          "index": 6
+        },
+        {
+          "index": 7
+        },
+        {
+          "index": 8
+        },
+        {
+          "index": 9
+        },
+        {
+          "index": 10
+        },
+        {
+          "index": 11
+        },
+        {
+          "index": 12
+        },
+        {
+          "index": 13
+        },
+        {
+          "index": 14
+        }
+      ]
+    },
+    {
+      "name": "rows",
+      "values": [
+        {
+          "id": "SLDBUI",
+          "label": "SLDBUI",
+          "row": 0,
+          "depth": 0
+        },
+        {
+          "id": "EntrySurface",
+          "label": "EntrySurface",
+          "row": 1,
+          "depth": 1
+        },
+        {
+          "id": "WelcomeActions",
+          "label": "WelcomeActions",
+          "row": 2,
+          "depth": 2
+        },
+        {
+          "id": "DocumentPicker",
+          "label": "DocumentPicker",
+          "row": 3,
+          "depth": 2
+        },
+        {
+          "id": "Workspace",
+          "label": "Workspace",
+          "row": 4,
+          "depth": 1
+        },
+        {
+          "id": "DocumentNavigator",
+          "label": "DocumentNavigator",
+          "row": 5,
+          "depth": 2
+        },
+        {
+          "id": "SourceEditor",
+          "label": "SourceEditor",
+          "row": 6,
+          "depth": 2
+        },
+        {
+          "id": "RenderedView",
+          "label": "RenderedView",
+          "row": 7,
+          "depth": 2
+        },
+        {
+          "id": "StructureInspector",
+          "label": "StructureInspector",
+          "row": 8,
+          "depth": 2
+        },
+        {
+          "id": "ActionToolbar",
+          "label": "ActionToolbar",
+          "row": 9,
+          "depth": 2
+        },
+        {
+          "id": "Adapters",
+          "label": "Adapters",
+          "row": 10,
+          "depth": 1
+        },
+        {
+          "id": "MarcadoAdapter",
+          "label": "MarcadoAdapter",
+          "row": 11,
+          "depth": 2
+        },
+        {
+          "id": "SldbAdapter",
+          "label": "SldbAdapter",
+          "row": 12,
+          "depth": 2
+        },
+        {
+          "id": "GitAdapter",
+          "label": "GitAdapter",
+          "row": 13,
+          "depth": 2
+        }
+      ]
+    },
+    {
+      "name": "spans",
+      "values": [
+        {
+          "component": "SLDBUI",
+          "row": 0,
+          "start": 0,
+          "end": 3,
+          "kind": "core",
+          "depth": 0
+        },
+        {
+          "component": "SLDBUI",
+          "row": 0,
+          "start": 3,
+          "end": 8,
+          "kind": "core",
+          "depth": 0
+        },
+        {
+          "component": "SLDBUI",
+          "row": 0,
+          "start": 8,
+          "end": 11,
+          "kind": "core",
+          "depth": 0
+        },
+        {
+          "component": "SLDBUI",
+          "row": 0,
+          "start": 11,
+          "end": 14,
+          "kind": "core",
+          "depth": 0
+        },
+        {
+          "component": "EntrySurface",
+          "row": 1,
+          "start": 0,
+          "end": 3,
+          "kind": "ui",
+          "depth": 1
+        },
+        {
+          "component": "WelcomeActions",
+          "row": 2,
+          "start": 0,
+          "end": 3,
+          "kind": "ui",
+          "depth": 2
+        },
+        {
+          "component": "DocumentPicker",
+          "row": 3,
+          "start": 1,
+          "end": 3,
+          "kind": "ui",
+          "depth": 2
+        },
+        {
+          "component": "Workspace",
+          "row": 4,
+          "start": 3,
+          "end": 8,
+          "kind": "core",
+          "depth": 1
+        },
+        {
+          "component": "Workspace",
+          "row": 4,
+          "start": 8,
+          "end": 11,
+          "kind": "core",
+          "depth": 1
+        },
+        {
+          "component": "Workspace",
+          "row": 4,
+          "start": 11,
+          "end": 14,
+          "kind": "core",
+          "depth": 1
+        },
+        {
+          "component": "DocumentNavigator",
+          "row": 5,
+          "start": 3,
+          "end": 4,
+          "kind": "ui",
+          "depth": 2
+        },
+        {
+          "component": "SourceEditor",
+          "row": 6,
+          "start": 4,
+          "end": 5,
+          "kind": "ui",
+          "depth": 2
+        },
+        {
+          "component": "SourceEditor",
+          "row": 6,
+          "start": 8,
+          "end": 11,
+          "kind": "ui",
+          "depth": 2
+        },
+        {
+          "component": "RenderedView",
+          "row": 7,
+          "start": 5,
+          "end": 6,
+          "kind": "ui",
+          "depth": 2
+        },
+        {
+          "component": "StructureInspector",
+          "row": 8,
+          "start": 6,
+          "end": 7,
+          "kind": "ui",
+          "depth": 2
+        },
+        {
+          "component": "ActionToolbar",
+          "row": 9,
+          "start": 7,
+          "end": 8,
+          "kind": "ui",
+          "depth": 2
+        },
+        {
+          "component": "ActionToolbar",
+          "row": 9,
+          "start": 11,
+          "end": 14,
+          "kind": "ui",
+          "depth": 2
+        },
+        {
+          "component": "Adapters",
+          "row": 10,
+          "start": 11,
+          "end": 14,
+          "kind": "boundary",
+          "depth": 1
+        },
+        {
+          "component": "MarcadoAdapter",
+          "row": 11,
+          "start": 11,
+          "end": 12,
+          "kind": "service",
+          "depth": 2
+        },
+        {
+          "component": "SldbAdapter",
+          "row": 12,
+          "start": 12,
+          "end": 13,
+          "kind": "service",
+          "depth": 2
+        },
+        {
+          "component": "GitAdapter",
+          "row": 13,
+          "start": 13,
+          "end": 14,
+          "kind": "service",
+          "depth": 2
+        }
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "kindColor",
+      "type": "ordinal",
+      "domain": [
+        "service",
+        "ui",
+        "boundary",
+        "core"
+      ],
+      "range": [
+        "#94A3B8",
+        "#94A3B8",
+        "#60A5FA",
+        "#F59E0B"
+      ]
+    }
+  ],
+  "marks": [
+    {
+      "type": "text",
+      "from": {
+        "data": "views"
+      },
+      "encode": {
+        "enter": {
+          "x": {
+            "signal": "left + (datum.minIdx + datum.maxIdx + 1) * cellWidth / 2"
+          },
+          "y": {
+            "value": 15
+          },
+          "text": {
+            "field": "view"
+          },
+          "align": {
+            "value": "center"
+          },
+          "fontWeight": {
+            "value": "bold"
+          },
+          "fontSize": {
+            "value": 15
+          },
+          "fill": {
+            "value": "#475569"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {
+        "data": "stages"
+      },
+      "encode": {
+        "enter": {
+          "x": {
+            "signal": "left + datum.index * cellWidth + cellWidth / 2"
+          },
+          "y": {
+            "value": 40
+          },
+          "text": {
+            "field": "label"
+          },
+          "align": {
+            "value": "center"
+          },
+          "fontWeight": {
+            "value": "bold"
+          },
+          "fontSize": {
+            "value": 13
+          },
+          "fill": {
+            "value": "#475569"
+          }
+        }
+      }
+    },
+    {
+      "type": "rule",
+      "from": {
+        "data": "stageBoundaries"
+      },
+      "encode": {
+        "enter": {
+          "x": {
+            "signal": "left + datum.index * cellWidth"
+          },
+          "y": {
+            "signal": "top - 20"
+          },
+          "y2": {
+            "signal": "top + 14 * rowHeight + 10"
+          },
+          "stroke": {
+            "value": "#CBD5E1"
+          },
+          "strokeDash": {
+            "value": [
+              4,
+              4
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "rule",
+      "from": {
+        "data": "viewBoundaries"
+      },
+      "encode": {
+        "enter": {
+          "x": {
+            "signal": "left + datum.indices * cellWidth"
+          },
+          "y": {
+            "signal": "top - 40"
+          },
+          "y2": {
+            "signal": "top + 14 * rowHeight + 20"
+          },
+          "stroke": {
+            "value": "#475569"
+          },
+          "strokeWidth": {
+            "value": 2.5
+          },
+          "strokeOpacity": {
+            "value": 0.6
+          }
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "from": {
+        "data": "rows"
+      },
+      "encode": {
+        "enter": {
+          "x": {
+            "value": 0
+          },
+          "x2": {
+            "signal": "width"
+          },
+          "y": {
+            "signal": "top + datum.row * rowHeight"
+          },
+          "height": {
+            "signal": "rowHeight"
+          },
+          "fill": {
+            "signal": "datum.depth === 0 ? (datum.row % 2 === 0 ? '#475569' : '#94A3B8') : (datum.row % 2 === 0 ? '#CBD5E1' : '#E2E8F0')"
+          },
+          "fillOpacity": {
+            "value": 0.15
+          }
+        }
+      }
+    },
+    {
+      "type": "rule",
+      "from": {
+        "data": "rows"
+      },
+      "encode": {
+        "enter": {
+          "x": {
+            "signal": "12 + datum.depth * 18"
+          },
+          "x2": {
+            "signal": "12 + datum.depth * 18"
+          },
+          "y": {
+            "signal": "top + datum.row * rowHeight + 2"
+          },
+          "y2": {
+            "signal": "top + datum.row * rowHeight + rowHeight - 2"
+          },
+          "stroke": {
+            "signal": "datum.depth === 0 ? '#475569' : '#94A3B8'"
+          },
+          "strokeWidth": {
+            "signal": "datum.depth === 0 ? 3 : 1.5"
+          }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {
+        "data": "rows"
+      },
+      "encode": {
+        "enter": {
+          "x": {
+            "signal": "20 + datum.depth * 18"
+          },
+          "y": {
+            "signal": "top + datum.row * rowHeight + rowHeight / 2"
+          },
+          "text": {
+            "field": "label"
+          },
+          "align": {
+            "value": "left"
+          },
+          "baseline": {
+            "value": "middle"
+          },
+          "fontSize": {
+            "value": 13
+          },
+          "fill": {
+            "value": "#111827"
+          }
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "from": {
+        "data": "spans"
+      },
+      "encode": {
+        "enter": {
+          "x": {
+            "signal": "left + datum.start * cellWidth + 4"
+          },
+          "x2": {
+            "signal": "left + datum.end * cellWidth - 4"
+          },
+          "y": {
+            "signal": "top + datum.row * rowHeight + barPadding"
+          },
+          "height": {
+            "signal": "rowHeight - barPadding * 2"
+          },
+          "cornerRadius": {
+            "value": 7
+          },
+          "fill": {
+            "scale": "kindColor",
+            "field": "kind"
+          },
+          "fillOpacity": {
+            "signal": "max(0.3, 1 - (datum.depth * 0.25))"
+          },
+          "stroke": {
+            "scale": "kindColor",
+            "field": "kind"
+          },
+          "strokeOpacity": {
+            "value": 0.7
+          },
+          "strokeWidth": {
+            "value": 1.5
+          }
+        }
+      }
+    }
+  ]
+};
+      vegaEmbed('#vis', spec, { actions: false, renderer: 'svg' })
+        .then(() => {
+          document.body.setAttribute('data-rendered', 'true');
+        })
+        .catch((err) => {
+          console.error(err);
+          document.body.setAttribute('data-render-error', String(err));
+        });
+    </script>
+  </body>
+</html>

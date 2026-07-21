@@ -4,3 +4,5 @@ coverage/
 .vite/
 .DS_Store
 *.log
+.obsidian/
+.sldb/runtime/locks/

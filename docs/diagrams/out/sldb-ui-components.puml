@@ -1,0 +1,73 @@
+@startuml
+skinparam component<<boundary>> BackgroundColor #FCECC9
+skinparam component<<boundary>> BorderColor #D4A73C
+skinparam component<<boundary>> FontColor #5E450B
+skinparam rectangle<<boundary>> BackgroundColor #FCECC9
+skinparam rectangle<<boundary>> BorderColor #D4A73C
+skinparam rectangle<<boundary>> FontColor #5E450B
+skinparam database<<boundary>> BackgroundColor #FCECC9
+skinparam database<<boundary>> BorderColor #D4A73C
+skinparam database<<boundary>> FontColor #5E450B
+skinparam package<<boundary>> BackgroundColor #FCECC9
+skinparam package<<boundary>> BorderColor #D4A73C
+skinparam package<<boundary>> FontColor #5E450B
+skinparam component<<core>> BackgroundColor #D8ECFF
+skinparam component<<core>> BorderColor #4C78A8
+skinparam component<<core>> FontColor #16324F
+skinparam rectangle<<core>> BackgroundColor #D8ECFF
+skinparam rectangle<<core>> BorderColor #4C78A8
+skinparam rectangle<<core>> FontColor #16324F
+skinparam database<<core>> BackgroundColor #D8ECFF
+skinparam database<<core>> BorderColor #4C78A8
+skinparam database<<core>> FontColor #16324F
+skinparam package<<core>> BackgroundColor #D8ECFF
+skinparam package<<core>> BorderColor #4C78A8
+skinparam package<<core>> FontColor #16324F
+skinparam component<<database>> BackgroundColor #DCEFD8
+skinparam component<<database>> BorderColor #5A9B5A
+skinparam component<<database>> FontColor #1F4F1F
+skinparam rectangle<<database>> BackgroundColor #DCEFD8
+skinparam rectangle<<database>> BorderColor #5A9B5A
+skinparam rectangle<<database>> FontColor #1F4F1F
+skinparam database<<database>> BackgroundColor #DCEFD8
+skinparam database<<database>> BorderColor #5A9B5A
+skinparam database<<database>> FontColor #1F4F1F
+skinparam package<<database>> BackgroundColor #DCEFD8
+skinparam package<<database>> BorderColor #5A9B5A
+skinparam package<<database>> FontColor #1F4F1F
+
+package "@sldb/ui" as SldbUi <<core>> {
+  component "Workspace Shell" as WorkspaceShell <<core>>
+  component "Document Navigator" as DocumentNavigator <<ui>>
+  component "Source Editor" as SourceEditor <<ui>>
+  component "Rendered Document View" as RenderedDocumentView <<ui>>
+  component "Structure Inspector" as StructureInspector <<ui>>
+  component "Action Toolbar" as ActionToolbar <<ui>>
+  rectangle "Marcado Adapter" as MarcadoAdapter <<boundary>>
+  rectangle "SLDB Adapter" as SldbAdapter <<boundary>>
+  rectangle "Git Adapter" as GitAdapter <<boundary>>
+}
+rectangle "@marcado/ runtime" as MarcadoRuntime <<boundary>>
+rectangle "@sldb/ runtime" as SldbRuntime <<boundary>>
+rectangle "Git" as Git <<boundary>>
+database "Markdown Files" as MarkdownFiles <<database>>
+database "local drafts" as LocalDrafts <<database>>
+
+WorkspaceShell --> DocumentNavigator : navigation
+WorkspaceShell --> SourceEditor : source editing
+WorkspaceShell --> RenderedDocumentView : rendered reading
+WorkspaceShell --> StructureInspector : structure inspection
+WorkspaceShell --> ActionToolbar : user actions
+SourceEditor --> MarcadoAdapter : parse / source map
+RenderedDocumentView --> MarcadoAdapter : rendered model
+StructureInspector --> MarcadoAdapter : markers / structure
+ActionToolbar --> SldbAdapter : validate / track / compose
+ActionToolbar --> GitAdapter : diff / history / restore
+MarcadoAdapter --> MarcadoRuntime : canonical interpretation
+SldbAdapter --> SldbRuntime : semantic document ops
+GitAdapter --> Git : temporal history
+SourceEditor --> MarkdownFiles : open / save
+SourceEditor --> LocalDrafts : draft persistence
+SldbRuntime --> MarkdownFiles : tracked docs
+Git --> MarkdownFiles : versioned files
+@enduml

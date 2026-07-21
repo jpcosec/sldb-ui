@@ -1,0 +1,116 @@
+id: sldb-ui.views
+title: SLDB UI View Matrix
+type: component_view_matrix
+version: "0.1"
+
+data:
+  views:
+    - id: onboarding
+      label: Onboarding
+      stages:
+        - id: start
+          label: start
+        - id: open-doc
+          label: open-doc
+        - id: sample-doc
+          label: sample-doc
+    - id: editing
+      label: Editing Workspace
+      stages:
+        - id: navigate
+          label: navigate
+        - id: source
+          label: source
+        - id: rendered
+          label: rendered
+        - id: inspect
+          label: inspect
+        - id: act
+          label: act
+    - id: persistence
+      label: Persistence
+      stages:
+        - id: draft
+          label: draft
+        - id: save-file
+          label: save-file
+        - id: export
+          label: export
+    - id: integration
+      label: Integration
+      stages:
+        - id: refresh-runtime
+          label: refresh-runtime
+        - id: validate-doc
+          label: validate-doc
+        - id: review-diff
+          label: review-diff
+
+  components:
+    - name: SLDBUI
+      kind: core
+      stages:
+        onboarding: [start, open-doc, sample-doc]
+        editing: [navigate, source, rendered, inspect, act]
+        persistence: [draft, save-file, export]
+        integration: [refresh-runtime, validate-doc, review-diff]
+      children:
+        - name: EntrySurface
+          kind: ui
+          stages:
+            onboarding: [start, open-doc, sample-doc]
+          children:
+            - name: WelcomeActions
+              kind: ui
+              stages:
+                onboarding: [start, open-doc, sample-doc]
+            - name: DocumentPicker
+              kind: ui
+              stages:
+                onboarding: [open-doc, sample-doc]
+        - name: Workspace
+          kind: core
+          stages:
+            editing: [navigate, source, rendered, inspect, act]
+            persistence: [draft, save-file, export]
+            integration: [refresh-runtime, validate-doc, review-diff]
+          children:
+            - name: DocumentNavigator
+              kind: ui
+              stages:
+                editing: [navigate]
+            - name: SourceEditor
+              kind: ui
+              stages:
+                editing: [source]
+                persistence: [draft, save-file, export]
+            - name: RenderedView
+              kind: ui
+              stages:
+                editing: [rendered]
+            - name: StructureInspector
+              kind: ui
+              stages:
+                editing: [inspect]
+            - name: ActionToolbar
+              kind: ui
+              stages:
+                editing: [act]
+                integration: [refresh-runtime, validate-doc, review-diff]
+        - name: Adapters
+          kind: boundary
+          stages:
+            integration: [refresh-runtime, validate-doc, review-diff]
+          children:
+            - name: MarcadoAdapter
+              kind: service
+              stages:
+                integration: [refresh-runtime]
+            - name: SldbAdapter
+              kind: service
+              stages:
+                integration: [validate-doc]
+            - name: GitAdapter
+              kind: service
+              stages:
+                integration: [review-diff]
