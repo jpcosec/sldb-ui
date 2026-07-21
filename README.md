@@ -10,14 +10,15 @@ The repository path remains `tools/sldb-ui`, and the product/package narrative i
 
 `@sldb/ui` currently provides:
 
-- rendered and source views for structured Markdown documents
+- a primary Marcado workspace for reading, rendering, and editing structured Markdown
+- a separate SLDB context surface for contract and validation-oriented checks
 - marker inspection and namespace filtering
 - selection-based marker creation
 - local draft save/load flows
 - file open/upload/save/download flows
 - folder exploration for Markdown workspaces
 - explicit runtime refresh through `@marcado/`
-- an early SLDB validation seam in the workspace toolbar and inspector
+- an early SLDB validation seam without forcing SLDB detail into the default writing surface
 
 ## Current architecture
 
@@ -26,6 +27,7 @@ During local Vite development, the app can call the real Marcado runtime through
 
 A lightweight frontend parser in `src/lib/marcado.ts` still exists as a degraded fallback for live editing and browser-only cases.
 This repo stays focused on the `@sldb/ui` operator surface while `@marcado/` remains the canonical parse/render runtime and `@sldb/` remains the semantic workflow boundary.
+The product now distinguishes a default Marcado workspace from a separate SLDB context so those two jobs do not compete in the same screen.
 
 ## Commands
 

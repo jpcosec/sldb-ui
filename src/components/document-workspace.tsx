@@ -433,6 +433,46 @@ function MarcadoInspectorSurface({
             {visibleMarkers.length === 0 ? <EmptyState text="No markers match the active filters." /> : null}
           </div>
         </InfoCard>
+
+        <details className="rounded-3xl border border-border bg-background p-4">
+          <summary className="cursor-pointer list-none text-sm font-semibold uppercase tracking-[0.14em] text-muted">
+            Advanced structure
+          </summary>
+          <div className="mt-4 space-y-5">
+            <div>
+              <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">Namespaces</div>
+              <div className="space-y-3">
+                {document.namespaces.map((namespace) => (
+                  <div key={namespace.name} className="rounded-2xl border border-border bg-surface p-3">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <span className="font-medium text-foreground">{namespace.name}</span>
+                      <span className="text-[11px] uppercase tracking-wide text-primary">{namespace.projection || "n/a"}</span>
+                    </div>
+                    <div className="space-y-1 text-xs text-muted">
+                      <div>allow_crossing: {String(namespace.allowCrossing ?? false)}</div>
+                      <div>requires_addressable_nodes: {String(namespace.requiresAddressableNodes ?? false)}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">Diagnostics</div>
+              {document.diagnostics.length === 0 ? (
+                <EmptyState text="No marker pairing issues are currently visible." />
+              ) : (
+                <ul className="space-y-2 text-sm text-warning">
+                  {document.diagnostics.map((diagnostic) => (
+                    <li key={diagnostic} className="rounded-xl border border-warning/20 bg-warning/10 p-3">
+                      {diagnostic}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </details>
       </div>
     </aside>
   );
