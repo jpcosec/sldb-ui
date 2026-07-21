@@ -4,8 +4,7 @@ id: board-001
 # Affected workspace or domain
 scope: desk
 # List of task-xxx paths
-tasks:
-- desk/tasks/task-align-product-copy-docs-and-test-narrative.md
+tasks: []
 # List of pill-xxx paths
 pills:
 - desk/contexts/pills.md
@@ -40,4 +39,4 @@ Route only the currently necessary granular task set for turning the existing ap
 
 _Generated from the task references above._
 
-- Align product copy, docs, and test narrative [draft] - Update product-facing strings, docs, and tests to consistently describe @sldb/ui with first-class Marcado support.
+_No open implementation tasks remain on this board._

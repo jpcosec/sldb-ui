@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
 
-describe('App Integration — Marcado workspace flows', () => {
+describe('App Integration — @sldb/ui workspace flows with Marcado support', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();

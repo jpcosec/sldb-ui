@@ -1,7 +1,8 @@
 {
-  "name": "marcado-ui",
+  "name": "@sldb/ui",
   "private": true,
   "version": "0.0.0",
+  "description": "Operator workspace for structured Markdown with first-class Marcado support.",
   "type": "module",
   "scripts": {
     "dev": "vite optimize && vite",

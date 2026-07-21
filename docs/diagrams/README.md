@@ -1,6 +1,6 @@
-# SLDB UI diagrams
+# @sldb/ui diagrams
 
-These diagrams were authored as structured specs and rendered with `spec2viz`.
+These diagrams document `@sldb/ui` as the operator surface for `@sldb/` with first-class `@marcado/` support. They were authored as structured specs and rendered with `spec2viz`.
 
 ## Files
 

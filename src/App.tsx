@@ -595,7 +595,7 @@ export default function App() {
           <WorkspaceSidebarHeader
             eyebrow="@sldb/ui"
             title="Open a structured Markdown document"
-            description="Start with a local file, upload Markdown into this session, open a sample document, or resume a saved draft. This workspace is the human entry surface for Marcado-compatible documents."
+            description="Start with a local file, upload Markdown into this session, open a sample document, or resume a saved draft. This workspace is the human entry surface for @sldb/ documents with first-class Marcado support."
           />
 
           <div className="p-4 space-y-5">

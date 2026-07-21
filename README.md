@@ -1,34 +1,31 @@
-# marcado-ui
+# @sldb/ui
 
-Frontend workspace for inspecting, rendering, and editing Marcado documents.
+Operator workspace for structured Markdown documents with first-class Marcado runtime support.
 
-## Status
+## Repository note
 
-This repository path is still transitional (`sldb-ui`), but the app itself is now **marcado-ui**.
+The repository path remains `tools/sldb-ui`, and the product/package narrative is now `@sldb/ui`.
 
 ## Purpose
 
-The UI currently provides:
+`@sldb/ui` currently provides:
 
-- rendered vs source views for Marcado documents
+- rendered and source views for structured Markdown documents
 - marker inspection and namespace filtering
 - selection-based marker creation
-- local draft save/load
+- local draft save/load flows
 - file open/upload/save/download flows
 - folder exploration for Markdown workspaces
-- runtime refresh against the Marcado Python implementation during local dev
+- explicit runtime refresh through `@marcado/`
+- an early SLDB validation seam in the workspace toolbar and inspector
 
 ## Current architecture
 
-The bundled canonical example is now loaded from a **runtime-generated canonical JSON export**.
-During local Vite development, the app can also call the real Marcado Python runtime through a dev-only adapter endpoint and refresh the current document model.
+The bundled canonical example is loaded from a runtime-generated canonical JSON export.
+During local Vite development, the app can call the real Marcado runtime through a dev-only adapter endpoint and refresh the current document model.
 
-A lightweight frontend parser in `src/lib/marcado.ts` still exists as a fallback for live editing and static/browser-only cases.
-Longer term, this project should keep reducing that fallback path and converge toward canonical outputs from the real Marcado runtime in:
-
-- `/home/jp/proyectos/hum-ecosystem/tools/marcado`
-
-The intended direction is for this repo to remain a **UI/operator surface**, not a second independent Marcado runtime.
+A lightweight frontend parser in `src/lib/marcado.ts` still exists as a degraded fallback for live editing and browser-only cases.
+This repo stays focused on the `@sldb/ui` operator surface while `@marcado/` remains the canonical parse/render runtime and `@sldb/` remains the semantic workflow boundary.
 
 ## Commands
 
@@ -43,10 +40,11 @@ npm run sync:runtime
 
 ## Main entry points
 
-- `src/App.tsx` — main Marcado workspace UI
+- `src/App.tsx` — `@sldb/ui` workspace composition root
+- `src/lib/marcado-adapter.ts` — Marcado interpretation boundary for parse/refresh/handoff flows
+- `src/lib/sldb-adapter.ts` — early SLDB validation seam for document-aware actions
 - `src/lib/marcado-runtime.ts` — adapter from Marcado runtime exports into UI models
-- `src/lib/marcado.ts` — fallback frontend parsing/helpers
-- `src/data/marcado-canonical-example.md` — canonical demo document
+- `src/lib/marcado.ts` — degraded frontend fallback parsing/helpers
 - `src/data/runtime/*.runtime.json` — synced runtime exports used by the UI
 - `scripts/sync-marcado-runtime.mjs` — refresh bundled runtime exports from `/tools/marcado`
 
@@ -54,3 +52,4 @@ npm run sync:runtime
 
 - Native file save/open/folder exploration uses the browser File System Access API when available.
 - Browser-local drafts use `localStorage`.
+- Git remains the intended temporal history layer; the UI focuses on document work surfaces rather than inventing a separate versioning system.
