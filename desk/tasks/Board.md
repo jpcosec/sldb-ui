@@ -5,7 +5,6 @@ id: board-001
 scope: desk
 # List of task-xxx paths
 tasks:
-- desk/tasks/task-extract-navigator-source-rendered-and-inspector-surfaces.md
 - desk/tasks/task-add-the-sldbadapter-contract-and-first-validation-affordance.md
 - desk/tasks/task-align-product-copy-docs-and-test-narrative.md
 # List of pill-xxx paths
@@ -42,6 +41,5 @@ Route only the currently necessary granular task set for turning the existing ap
 
 _Generated from the task references above._
 
-- Extract navigator, source, rendered, and inspector surfaces [draft] - Break the current monolithic UI into explicit navigator, source editor, rendered document, and structure inspector surfaces.
 - Add the SldbAdapter contract and first validation affordance [draft] - Introduce a minimal SldbAdapter contract and expose at least one document-context or validation-oriented user affordance through it.
 - Align product copy, docs, and test narrative [draft] - Update product-facing strings, docs, and tests to consistently describe @sldb/ui with first-class Marcado support.
