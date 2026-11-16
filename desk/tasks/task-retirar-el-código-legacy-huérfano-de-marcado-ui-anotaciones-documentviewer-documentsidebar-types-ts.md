@@ -1,7 +1,7 @@
 ---
 sldb:
   by: agent
-  at: '2026-11-16T05:16:15Z'
+  at: '2026-11-16T12:43:55Z'
   authority: generated
   via: save_document_payload
 id: task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts
@@ -10,7 +10,7 @@ summary: ''
 tags:
 - workspace:desk
 - artifact:task
-- host:local
+- host:robocop2
 current_node: ritual-execution
 history: []
 references:
@@ -63,15 +63,15 @@ ENTRA: borrar con git rm exactamente estos 14 archivos y nada más. Fuentes (8):
 
 _Outline the expected implementation route or affected surface._
 
-Repo /home/jp/proyectos/SLDB_1/UIs/marcado-ui, rama main, máquina local. Directorio de evidencia (run): runs/subagents/20261116-marcado-ui-legacy/. 1) Goldens antes del cambio: TMPDIR=/dev/shm npx vitest run src/__tests__/integration.test.tsx src/__tests__/marcado-ui.ux.test.tsx src/__tests__/marcado-adapter.test.ts src/__tests__/workspace-state.test.ts > runs/subagents/20261116-marcado-ui-legacy/goldens-before.txt 2>&1. Hoy da 4 archivos y 23 tests pasados (9+9+3+2). Registrarlo: deskops review record task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts --kind goldens --evidence runs/subagents/20261116-marcado-ui-legacy/goldens-before.txt --reason "suites vivas antes de borrar el legacy" --root . 2) grep -rnE "AnnotationPopup|AnnotationsList|DocumentViewer|DocumentSidebar|useAnnotation|/types[\"']|utils/frontmatter" src : todas las coincidencias deben estar en los 14 archivos de la lista; si no, aplicar la regla de parada del scope. 3) git rm de los 14 archivos. 4) Repetir el comando del paso 1 hacia goldens-after.txt y comparar: los mismos 4 archivos, 23 tests pasados y 0 fallidos. 5) npm run build. 6) TMPDIR=/dev/shm npx vitest run completo.
+Repo /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui, rama main, máquina robocop2. Directorio de evidencia (run): runs/subagents/20261116-marcado-ui-legacy/. 1) Goldens antes del cambio: TMPDIR=/dev/shm npx vitest run src/__tests__/integration.test.tsx src/__tests__/marcado-ui.ux.test.tsx src/__tests__/marcado-adapter.test.ts src/__tests__/workspace-state.test.ts > runs/subagents/20261116-marcado-ui-legacy/goldens-before.txt 2>&1. Hoy da 4 archivos y 23 tests pasados (9+9+3+2). Registrarlo: deskops review record task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts --kind goldens --evidence runs/subagents/20261116-marcado-ui-legacy/goldens-before.txt --reason "suites vivas antes de borrar el legacy" --root . 2) grep -rnE "AnnotationPopup|AnnotationsList|DocumentViewer|DocumentSidebar|useAnnotation|/types[\"']|utils/frontmatter" src : todas las coincidencias deben estar en los 14 archivos de la lista; si no, aplicar la regla de parada del scope. 3) git rm de los 14 archivos. 4) Repetir el comando del paso 1 hacia goldens-after.txt y comparar: los mismos 4 archivos, 23 tests pasados y 0 fallidos. 5) npm run build. 6) TMPDIR=/dev/shm npx vitest run completo.
 
 ## Validation
 
 _List the checks required before this task can close._
 
-- cd /home/jp/proyectos/SLDB_1/UIs/marcado-ui && TMPDIR=/dev/shm npx vitest run
-- cd /home/jp/proyectos/SLDB_1/UIs/marcado-ui && npm run build
-- cd /home/jp/proyectos/SLDB_1/UIs/marcado-ui && ! grep -rnE "AnnotationPopup|AnnotationsList|DocumentViewer|DocumentSidebar|useAnnotation|utils/frontmatter" src
+- cd /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui && TMPDIR=/dev/shm npx vitest run
+- cd /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui && npm run build
+- cd /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui && ! grep -rnE "AnnotationPopup|AnnotationsList|DocumentViewer|DocumentSidebar|useAnnotation|utils/frontmatter" src
 
 ## Done When
 

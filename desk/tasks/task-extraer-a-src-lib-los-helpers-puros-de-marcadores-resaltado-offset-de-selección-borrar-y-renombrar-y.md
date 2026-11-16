@@ -1,7 +1,7 @@
 ---
 sldb:
   by: agent
-  at: '2026-11-16T05:16:43Z'
+  at: '2026-11-16T12:43:50Z'
   authority: generated
   via: save_document_payload
 id: task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y
@@ -10,7 +10,7 @@ summary: ''
 tags:
 - workspace:desk
 - artifact:task
-- host:local
+- host:robocop2
 current_node: ritual-execution
 history: []
 references:
@@ -77,7 +77,7 @@ NO ENTRA:
 
 _Outline the expected implementation route or affected surface._
 
-Repo /home/jp/proyectos/SLDB_1/UIs/marcado-ui, rama main, máquina local. Run de evidencia: runs/subagents/20261116-marcado-ui-marker-helpers/.
+Repo /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui, rama main, máquina robocop2. Run de evidencia: runs/subagents/20261116-marcado-ui-marker-helpers/.
 1) Goldens antes del cambio: TMPDIR=/dev/shm npx vitest run src/__tests__/integration.test.tsx src/__tests__/marcado-ui.ux.test.tsx > runs/subagents/20261116-marcado-ui-marker-helpers/goldens-before.txt 2>&1. Hoy da 2 archivos y 18 tests pasados.
 2) Registrar los goldens: deskops review record task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y --kind goldens --evidence runs/subagents/20261116-marcado-ui-marker-helpers/goldens-before.txt --reason "suites de UI antes de extraer helpers" --root .
 3) Crear los dos módulos de src/lib y ajustar los imports de document-workspace.tsx y App.tsx.
@@ -90,10 +90,10 @@ Repo /home/jp/proyectos/SLDB_1/UIs/marcado-ui, rama main, máquina local. Run de
 
 _List the checks required before this task can close._
 
-- cd /home/jp/proyectos/SLDB_1/UIs/marcado-ui && TMPDIR=/dev/shm npx vitest run src/__tests__/marker-render.test.ts src/__tests__/marker-edit.test.ts
-- cd /home/jp/proyectos/SLDB_1/UIs/marcado-ui && TMPDIR=/dev/shm npx vitest run
-- cd /home/jp/proyectos/SLDB_1/UIs/marcado-ui && npm run build
-- cd /home/jp/proyectos/SLDB_1/UIs/marcado-ui && ! grep -n "function buildHighlightedMarkdown\|function getTextOffset" src/components/document-workspace.tsx
+- cd /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui && TMPDIR=/dev/shm npx vitest run src/__tests__/marker-render.test.ts src/__tests__/marker-edit.test.ts
+- cd /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui && TMPDIR=/dev/shm npx vitest run
+- cd /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui && npm run build
+- cd /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui && ! grep -n "function buildHighlightedMarkdown\|function getTextOffset" src/components/document-workspace.tsx
 
 ## Done When
 

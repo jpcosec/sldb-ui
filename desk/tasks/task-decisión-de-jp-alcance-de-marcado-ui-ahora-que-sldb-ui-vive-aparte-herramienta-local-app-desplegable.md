@@ -1,7 +1,7 @@
 ---
 sldb:
   by: agent
-  at: '2026-11-16T05:17:01Z'
+  at: '2026-11-16T12:43:46Z'
   authority: generated
   via: save_document_payload
 id: task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable
@@ -10,7 +10,7 @@ summary: ''
 tags:
 - workspace:desk
 - artifact:task
-- host:local
+- host:robocop2
 current_node: ritual-execution
 history: []
 references:
@@ -59,10 +59,10 @@ Además, una respuesta explícita sobre el hueco 6: la vista de grafo va en marc
 _State what is in scope and what is out of scope._
 
 ENTRA:
-- El coordinador del desk UIs/marcado-ui (una sesión de Claude con el rol deskops-supervisor) le presenta a JP las opciones A, B y C y la pregunta del hueco 6. El canal es la conversación con JP en esa sesión: la pregunta va escrita en el informe /home/jp/proyectos/SLDB_1/reports/triaje-marcado-ui-20261116.md y se repite en el chat. La respuesta cuenta solo cuando JP la escribe en el chat.
+- El coordinador del desk UIs/marcado-ui (una sesión de Claude con el rol deskops-supervisor) le presenta a JP las opciones A, B y C y la pregunta del hueco 6. El canal es la conversación con JP en esa sesión: la pregunta va escrita en el informe /mnt/ssd/proyectos/SLDB_1/reports/triaje-marcado-ui-20261116.md y se repite en el chat. La respuesta cuenta solo cuando JP la escribe en el chat.
 - Registrar la respuesta en docs/decisiones/2026-11-alcance-marcado-ui.md: la línea "Opción A", "Opción B" u "Opción C" literal, la respuesta del hueco 6 y una tabla de los huecos 1, 2, 6, 7 y 8 con su destino.
 - Registrar el recibo owner: deskops review record task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable --kind owner --evidence docs/decisiones/2026-11-alcance-marcado-ui.md --reason "JP eligió la opción <letra> en la sesión del coordinador, <fecha>" --root .
-- Por cada hueco que JP acepte, una tarea con deskops add task y su contrato completo (tipo, why, goal, scope, implementation_path, files, validation, done_when), etiquetada host:local si es UI o host:robocop2 si es CI o servidor, con sus propias revisiones preflight y bundle. Esa tarea nueva hace su propio desglose; este nodo solo garantiza que exista una tarea por hueco aceptado.
+- Por cada hueco que JP acepte, una tarea con deskops add task y su contrato completo (tipo, why, goal, scope, implementation_path, files, validation, done_when), etiquetada host:robocop2 (JP, 2026-11-16: todas las tareas corren en robocop2, también las de UI), con sus propias revisiones preflight y bundle. Esa tarea nueva hace su propio desglose; este nodo solo garantiza que exista una tarea por hueco aceptado.
 - Si JP quiere la vista de grafo en graph_ui, enviar deskops message send --to graph_ui --kind suggestion con el pedido, y anotar su id en el documento.
 NO ENTRA:
 - implementar nada;
@@ -83,8 +83,8 @@ _Outline the expected implementation route or affected surface._
 
 _List the checks required before this task can close._
 
-- test -s /home/jp/proyectos/SLDB_1/UIs/marcado-ui/docs/decisiones/2026-11-alcance-marcado-ui.md
-- grep -E "Opción (A|B|C)" /home/jp/proyectos/SLDB_1/UIs/marcado-ui/docs/decisiones/2026-11-alcance-marcado-ui.md
+- test -s /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui/docs/decisiones/2026-11-alcance-marcado-ui.md
+- grep -E "Opción (A|B|C)" /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui/docs/decisiones/2026-11-alcance-marcado-ui.md
 
 ## Done When
 
