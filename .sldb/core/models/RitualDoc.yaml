@@ -1,9 +1,12 @@
 name: RitualDoc
 model_ref: deskops.models:RitualDoc
-path: /home/jp/proyectos/hum-ecosystem/tools/deskops/deskops/models/ritual.py
+path: ''
 documents_index: .sldb/core/documents/RitualDoc.yaml
-sections_index: ''
-hash_b: ''
+sections_index: .sldb/runtime/sections/RitualDoc.yaml
+model_hash: 2d345973df11a0ef0d3fe47f8971a88d616ebf167d4cc287f6a2b98865eb2aed
+roster_hash: 8a607da81ae7e784d5626e128cda72c3e2684449e49a3b2bc48668a5d399784f
+contract_hash: fd5777c6019cce9e2c3425026376c9de410e9f8c9c66fe52f88a26a8e8f398d6
+documents_count: 3
 version: 1
 canonical: false
 family: null

@@ -32,12 +32,12 @@ export function WorkspaceNavigator({
   const nodes = buildFileTree(entries, documents);
 
   return (
-    <section className="space-y-3">
-      <div className="flex items-center justify-between gap-3">
+    <section className="space-y-3 rounded-[1.75rem] border border-white/8 bg-background/40 p-3">
+      <div className="flex items-center justify-between gap-3 px-1 pt-1">
         <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted">Workspace files</h2>
         {actions ? <div className="flex gap-2">{actions}</div> : null}
       </div>
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         {nodes.map((node) => (
           <FileTreeNodeView key={node.path} node={node} selectedSlug={selectedSlug} onSelect={onSelect} depth={0} />
         ))}
@@ -61,12 +61,12 @@ function FileTreeNodeView({
     return (
       <div>
         <div
-          className="mb-1 flex items-center gap-2 px-2 text-xs uppercase tracking-wide text-muted"
+          className="mb-1 flex items-center gap-2 px-2 text-[11px] uppercase tracking-[0.16em] text-muted"
           style={{ paddingLeft: `${depth * 12 + 8}px` }}
         >
           <FiFolder /> {node.name}
         </div>
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           {node.children.map((child) => (
             <FileTreeNodeView
               key={child.path}
@@ -85,17 +85,21 @@ function FileTreeNodeView({
   return (
     <button
       onClick={() => onSelect(node.slug)}
-      className={`w-full cursor-pointer rounded-xl border p-3 text-left transition ${selected ? "border-primary/40 bg-primary/10" : "border-border bg-background hover:bg-surface-hover"}`}
+      className={`w-full cursor-pointer rounded-[1rem] border p-3 text-left transition ${selected ? "border-primary/40 bg-primary/12 shadow-[0_8px_24px_rgba(91,96,255,0.12)]" : "border-border bg-background/80 hover:bg-surface-hover"}`}
       style={{ marginLeft: `${depth * 12}px` }}
     >
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <FiFile className="shrink-0" /> <span className="truncate">{node.title}</span>
           </div>
           <div className="mt-1 truncate text-xs text-muted">{node.path}</div>
+          <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-muted">
+            <span className="rounded-full border border-border px-2 py-0.5">{node.markers} markers</span>
+            <span className="rounded-full border border-border px-2 py-0.5">{node.namespaces} namespaces</span>
+          </div>
         </div>
-        <span className="rounded-full border border-border px-2 py-0.5 text-[11px] uppercase tracking-wide text-muted">
+        <span className="whitespace-nowrap rounded-full border border-border px-2 py-0.5 text-[11px] uppercase tracking-wide text-muted">
           {selected ? "current" : node.origin}
         </span>
       </div>

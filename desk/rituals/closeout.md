@@ -7,4 +7,4 @@ tags:
 
 # Closeout ritual
 
-Close a sldb-ui task only after validation passes, the board is updated, and the task ends with its own commit before any new task begins.
+Close a marcado-ui task only after validation passes, the board is updated, and the final change is ready to commit.

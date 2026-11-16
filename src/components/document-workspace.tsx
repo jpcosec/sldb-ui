@@ -7,23 +7,23 @@ import {
   FiCode,
   FiDownload,
   FiEdit2,
-  FiFileText,
+  FiEye,
   FiGitBranch,
   FiHash,
+  FiLayers,
   FiPlus,
   FiRotateCcw,
   FiSave,
+  FiSliders,
   FiTrash2,
   FiUpload,
   FiX,
 } from "react-icons/fi";
 import { type MarcadoDocument, type MarkerRange } from "../lib/marcado";
-import { type SldbValidationSummary } from "../lib/sldb-adapter";
 import { type SelectionState, type ViewMode } from "../lib/workspace-state";
 import { WorkspaceTopToolbar } from "./workspace-shell";
 
 export type DocumentInterpretationMode = "runtime" | "fallback" | "local";
-export type WorkspaceSurface = "marcado" | "sldb";
 
 export function DocumentWorkspace({
   document,
@@ -32,24 +32,21 @@ export function DocumentWorkspace({
   notice,
   fileLabel,
   interpretationMode,
-  validationSummary,
-  workspaceSurface,
   selectionState,
   canUseNativeFiles,
   markerFilter,
   visibleMarkers,
   onChangeViewMode,
-  onChangeWorkspaceSurface,
   onSourceChange,
   onSelectRange,
   onClearSelection,
   onAddMarker,
   onToggleMarkerFilter,
+  onSetMarkerFilter,
   onClearMarkerFilter,
   onRenameMarker,
   onDeleteMarker,
   onRefreshRuntime,
-  onCheckSldbValidation,
   onSaveDraft,
   onSaveFile,
   onLoad,
@@ -65,24 +62,21 @@ export function DocumentWorkspace({
   notice: string;
   fileLabel: string | null;
   interpretationMode: DocumentInterpretationMode;
-  validationSummary: SldbValidationSummary | null;
-  workspaceSurface: WorkspaceSurface;
   selectionState: SelectionState | null;
   canUseNativeFiles: boolean;
   markerFilter: string[];
   visibleMarkers: MarkerRange[];
   onChangeViewMode: (mode: ViewMode) => void;
-  onChangeWorkspaceSurface: (surface: WorkspaceSurface) => void;
   onSourceChange: (value: string) => void;
   onSelectRange: (selection: SelectionState | null) => void;
   onClearSelection: () => void;
   onAddMarker: (namespace: string, classification: string) => void;
   onToggleMarkerFilter: (namespace: string) => void;
+  onSetMarkerFilter: (nextFilter: string[]) => void;
   onClearMarkerFilter: () => void;
   onRenameMarker: (marker: MarkerRange) => void;
   onDeleteMarker: (marker: MarkerRange) => void;
   onRefreshRuntime: () => void | Promise<void>;
-  onCheckSldbValidation: () => void;
   onSaveDraft: () => void;
   onSaveFile: () => void | Promise<void>;
   onLoad: () => void;
@@ -127,23 +121,30 @@ export function DocumentWorkspace({
     onSelectRange({ start, end, text: selection.toString().trim() });
   };
 
-  const metadata = (
-    <>
-      {fileLabel ? <p className="text-xs text-muted/80">{fileLabel}</p> : null}
-      <InterpretationModeBadge mode={interpretationMode} />
-      {validationSummary ? <ValidationStateBadge state={validationSummary.state} /> : null}
-    </>
-  );
-
-  return workspaceSurface === "marcado" ? (
+  return (
     <div className="grid h-full min-w-0 xl:grid-cols-[minmax(0,1fr)_320px]">
       <section className="min-w-0 overflow-y-auto">
         <WorkspaceTopToolbar
-          eyebrow="Marcado workspace"
+          eyebrow="@marcado/ui"
           title={document.title}
-          description="Use this surface to read, render, and edit the Markdown document. SLDB validation lives in its own secondary context."
-          metadata={metadata}
-          viewSwitcher={<DocumentViewSwitcher viewMode={viewMode} onChangeViewMode={onChangeViewMode} />}
+          description="Read, filter, inspect, and edit semantic Markdown without mixing in unrelated workflow surfaces."
+          metadata={
+            <>
+              {fileLabel ? <p className="text-xs text-muted/80">{fileLabel}</p> : null}
+              <InterpretationModeBadge mode={interpretationMode} />
+            </>
+          }
+          viewSwitcher={
+            <div className="space-y-3">
+              <DocumentViewSwitcher viewMode={viewMode} onChangeViewMode={onChangeViewMode} />
+              <FocusModeStrip
+                viewMode={viewMode}
+                markerFilter={markerFilter}
+                onChangeViewMode={onChangeViewMode}
+                onSetMarkerFilter={onSetMarkerFilter}
+              />
+            </div>
+          }
           contextualActions={viewMode === "rendered" && selectionState ? (
             <MarkerComposer
               selectionText={selectionState.text}
@@ -164,13 +165,13 @@ export function DocumentWorkspace({
               onOpenFile={onOpenFile}
               onExploreFiles={onExploreFiles}
               onUpload={onUpload}
-              onOpenSldbContext={() => onChangeWorkspaceSurface("sldb")}
             />
           }
           notice={notice ? <span className="text-sm text-muted">{notice}</span> : undefined}
         />
 
         <DocumentContentSurface>
+          <WorkspaceStageSummary document={document} visibleMarkers={visibleMarkers} viewMode={viewMode} markerFilter={markerFilter} />
           {viewMode === "rendered" ? (
             <RenderedDocumentSurface
               document={document}
@@ -189,36 +190,11 @@ export function DocumentWorkspace({
         markerFilter={markerFilter}
         visibleMarkers={visibleMarkers}
         onToggleMarkerFilter={onToggleMarkerFilter}
+        onSetMarkerFilter={onSetMarkerFilter}
         onClearMarkerFilter={onClearMarkerFilter}
         onRenameMarker={onRenameMarker}
         onDeleteMarker={onDeleteMarker}
       />
-    </div>
-  ) : (
-    <div className="grid h-full min-w-0 xl:grid-cols-[minmax(0,1fr)_320px]">
-      <section className="min-w-0 overflow-y-auto">
-        <WorkspaceTopToolbar
-          eyebrow="SLDB context"
-          title={document.title}
-          description="Use this surface to understand contract readiness, document identity, and issues without mixing those checks into the main writing workspace."
-          metadata={metadata}
-          viewSwitcher={<SurfaceSwitcher current={workspaceSurface} onChangeWorkspaceSurface={onChangeWorkspaceSurface} />}
-          primaryActions={
-            <SldbToolbarActions
-              onCheckSldbValidation={onCheckSldbValidation}
-              onReturnToMarcado={() => onChangeWorkspaceSurface("marcado")}
-            />
-          }
-          notice={notice ? <span className="text-sm text-muted">{notice}</span> : undefined}
-        />
-
-        <div className="space-y-6 p-6 lg:p-8">
-          {validationSummary ? <SldbValidationCard validationSummary={validationSummary} /> : null}
-          <SldbOverviewSurface document={document} />
-        </div>
-      </section>
-
-      <SldbContextSidebar document={document} validationSummary={validationSummary} />
     </div>
   );
 }
@@ -242,22 +218,51 @@ function DocumentViewSwitcher({
   );
 }
 
-function SurfaceSwitcher({
-  current,
-  onChangeWorkspaceSurface,
+function FocusModeStrip({
+  viewMode,
+  markerFilter,
+  onChangeViewMode,
+  onSetMarkerFilter,
 }: {
-  current: WorkspaceSurface;
-  onChangeWorkspaceSurface: (surface: WorkspaceSurface) => void;
+  viewMode: ViewMode;
+  markerFilter: string[];
+  onChangeViewMode: (mode: ViewMode) => void;
+  onSetMarkerFilter: (nextFilter: string[]) => void;
 }) {
+  const activeMode =
+    viewMode === "source"
+      ? "source"
+      : markerFilter.length === 0
+        ? "all"
+        : markerFilter.length === 1 && markerFilter[0] === "struct"
+          ? "struct"
+          : markerFilter.length === 1 && markerFilter[0] === "sem"
+            ? "sem"
+            : markerFilter.length === 1 && markerFilter[0] === "rhet"
+              ? "rhet"
+              : "custom";
+
   return (
-    <div className="inline-flex self-start rounded-xl border border-border bg-surface p-1 lg:self-auto">
-      <ViewButton active={current === "marcado"} onClick={() => onChangeWorkspaceSurface("marcado")} icon={<FiBookOpen />}>
-        Marcado
-      </ViewButton>
-      <ViewButton active={current === "sldb"} onClick={() => onChangeWorkspaceSurface("sldb")} icon={<FiFileText />}>
-        SLDB
-      </ViewButton>
+    <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-background/70 p-2">
+      <FocusModeButton active={activeMode === "all"} icon={<FiLayers />} label="All" onClick={() => { onChangeViewMode("rendered"); onSetMarkerFilter([]); }} />
+      <FocusModeButton active={activeMode === "struct"} icon={<FiSliders />} label="Structure" onClick={() => { onChangeViewMode("rendered"); onSetMarkerFilter(["struct"]); }} />
+      <FocusModeButton active={activeMode === "sem"} icon={<FiHash />} label="Semantics" onClick={() => { onChangeViewMode("rendered"); onSetMarkerFilter(["sem"]); }} />
+      <FocusModeButton active={activeMode === "rhet"} icon={<FiGitBranch />} label="Rhetoric" onClick={() => { onChangeViewMode("rendered"); onSetMarkerFilter(["rhet"]); }} />
+      <FocusModeButton active={activeMode === "source"} icon={<FiCode />} label="Source" onClick={() => onChangeViewMode("source")} />
+      {activeMode === "custom" ? <span className="rounded-full border border-border px-2 py-1 text-[11px] uppercase tracking-wide text-muted">Custom filter</span> : null}
     </div>
+  );
+}
+
+function FocusModeButton({ active, icon, label, onClick }: { active: boolean; icon: ReactNode; label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm transition ${active ? "bg-primary text-on-primary shadow-sm" : "text-muted hover:bg-surface hover:text-foreground"}`}
+    >
+      {icon}
+      {label}
+    </button>
   );
 }
 
@@ -272,7 +277,6 @@ function MarcadoToolbarActions({
   onOpenFile,
   onExploreFiles,
   onUpload,
-  onOpenSldbContext,
 }: {
   canUseNativeFiles: boolean;
   onRefreshRuntime: () => void | Promise<void>;
@@ -284,7 +288,6 @@ function MarcadoToolbarActions({
   onOpenFile: () => void | Promise<void>;
   onExploreFiles: () => void | Promise<void>;
   onUpload: React.ChangeEventHandler<HTMLInputElement>;
-  onOpenSldbContext: () => void;
 }) {
   return (
     <>
@@ -301,30 +304,39 @@ function MarcadoToolbarActions({
         </>
       ) : null}
       <UploadActionButton onChange={onUpload} />
-      <ActionButton onClick={onOpenSldbContext} icon={<FiFileText />} label="Open SLDB context" />
-    </>
-  );
-}
-
-function SldbToolbarActions({
-  onCheckSldbValidation,
-  onReturnToMarcado,
-}: {
-  onCheckSldbValidation: () => void;
-  onReturnToMarcado: () => void;
-}) {
-  return (
-    <>
-      <ActionButton onClick={onCheckSldbValidation} icon={<FiFileText />} label="Check SLDB validation" />
-      <ActionButton onClick={onReturnToMarcado} icon={<FiBookOpen />} label="Back to Marcado workspace" />
     </>
   );
 }
 
 function DocumentContentSurface({ children }: { children: ReactNode }) {
   return (
-    <div className="p-6 lg:p-8">
-      <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">{children}</div>
+    <div className="p-5 lg:p-8">
+      <div className="overflow-hidden rounded-[2rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function WorkspaceStageSummary({
+  document,
+  visibleMarkers,
+  viewMode,
+  markerFilter,
+}: {
+  document: MarcadoDocument;
+  visibleMarkers: MarkerRange[];
+  viewMode: ViewMode;
+  markerFilter: string[];
+}) {
+  return (
+    <div className="border-b border-border/80 bg-background/55 px-5 py-4 lg:px-8">
+      <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
+        <span className="rounded-full border border-border px-2.5 py-1">{viewMode === "source" ? "Source editing" : "Rendered reading"}</span>
+        <span className="rounded-full border border-border px-2.5 py-1">{visibleMarkers.length} visible markers</span>
+        <span className="rounded-full border border-border px-2.5 py-1">{document.graphEdges.length} graph edges</span>
+        <span className="rounded-full border border-border px-2.5 py-1">{markerFilter.length === 0 ? "all namespaces" : markerFilter.join(", ")}</span>
+      </div>
     </div>
   );
 }
@@ -341,31 +353,29 @@ function RenderedDocumentSurface({
   onMouseUp: () => void;
 }) {
   return (
-    <div className="p-6 lg:p-8">
-      <div ref={renderedRef} onMouseUp={onMouseUp} className="prose-content max-w-4xl select-text">
-        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-          {buildHighlightedMarkdown(document.plainBody, visibleMarkers)}
-        </ReactMarkdown>
+    <div className="min-h-[72vh] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.03),transparent_35%)] p-6 lg:p-10">
+      <div className="mx-auto max-w-4xl rounded-[1.75rem] border border-white/8 bg-background/80 px-6 py-8 shadow-[0_16px_48px_rgba(0,0,0,0.24)] lg:px-10" ref={renderedRef} onMouseUp={onMouseUp}>
+        <div className="prose-content select-text">
+          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+            {buildHighlightedMarkdown(document.plainBody, visibleMarkers)}
+          </ReactMarkdown>
+        </div>
       </div>
     </div>
   );
 }
 
-function SourceEditorSurface({
-  sourceValue,
-  onSourceChange,
-}: {
-  sourceValue: string;
-  onSourceChange: (value: string) => void;
-}) {
+function SourceEditorSurface({ sourceValue, onSourceChange }: { sourceValue: string; onSourceChange: (value: string) => void }) {
   return (
-    <textarea
-      aria-label="Marcado source editor"
-      value={sourceValue}
-      onChange={(event) => onSourceChange(event.target.value)}
-      className="min-h-[70vh] w-full resize-y bg-surface p-6 font-mono text-sm leading-7 text-foreground outline-none lg:p-8"
-      spellCheck={false}
-    />
+    <div className="min-h-[72vh] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.03),transparent_35%)] p-4 lg:p-6">
+      <textarea
+        aria-label="Marcado source editor"
+        value={sourceValue}
+        onChange={(event) => onSourceChange(event.target.value)}
+        className="min-h-[66vh] w-full resize-y rounded-[1.5rem] border border-white/8 bg-background/85 p-5 font-mono text-sm leading-7 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] outline-none lg:p-8"
+        spellCheck={false}
+      />
+    </div>
   );
 }
 
@@ -374,6 +384,7 @@ function MarcadoInspectorSurface({
   markerFilter,
   visibleMarkers,
   onToggleMarkerFilter,
+  onSetMarkerFilter,
   onClearMarkerFilter,
   onRenameMarker,
   onDeleteMarker,
@@ -382,42 +393,45 @@ function MarcadoInspectorSurface({
   markerFilter: string[];
   visibleMarkers: MarkerRange[];
   onToggleMarkerFilter: (namespace: string) => void;
+  onSetMarkerFilter: (nextFilter: string[]) => void;
   onClearMarkerFilter: () => void;
   onRenameMarker: (marker: MarkerRange) => void;
   onDeleteMarker: (marker: MarkerRange) => void;
 }) {
   return (
-    <aside className="overflow-y-auto border-t border-border bg-surface xl:border-t-0 xl:border-l">
-      <div className="space-y-5 p-5">
-        <InfoCard icon={<FiFileText />} title="Document summary">
-          <KeyValue label="ID" value={document.id} />
-          <KeyValue label="Type" value={document.type} />
-          <KeyValue label="Markers" value={String(document.markers.length)} />
-        </InfoCard>
-
-        <InfoCard icon={<FiCode />} title="Markers">
-          <div className="mb-3 flex flex-wrap gap-2">
+    <aside className="overflow-y-auto border-t border-border bg-surface/65 xl:border-t-0 xl:border-l">
+      <div className="space-y-4 p-4 lg:p-5">
+        <InfoCard icon={<FiEye />} title="Focus">
+          <div className="mb-4 grid grid-cols-2 gap-2">
+            <MiniStat label="Visible" value={String(visibleMarkers.length)} />
+            <MiniStat label="Total" value={String(document.markers.length)} />
+            <MiniStat label="Namespaces" value={String(document.namespaces.length)} />
+            <MiniStat label="Edges" value={String(document.graphEdges.length)} />
+          </div>
+          <div className="space-y-2">
+            <button onClick={() => onSetMarkerFilter([])} className={`w-full rounded-xl border px-3 py-2 text-left text-sm cursor-pointer ${markerFilter.length === 0 ? "border-primary/40 bg-primary/10 text-primary" : "border-border text-muted hover:bg-background"}`}>All layers</button>
             {document.namespaces.map((namespace) => {
-              const active = markerFilter.length === 0 || markerFilter.includes(namespace.name);
+              const active = markerFilter.includes(namespace.name);
               return (
                 <button
                   key={namespace.name}
                   onClick={() => onToggleMarkerFilter(namespace.name)}
-                  className={`cursor-pointer rounded-full border px-2 py-1 text-xs ${active ? "border-primary/40 bg-primary/10 text-primary" : "border-border text-muted"}`}
+                  className={`flex w-full cursor-pointer items-center justify-between rounded-xl border px-3 py-2 text-left text-sm ${active ? "border-primary/40 bg-primary/10 text-primary" : "border-border text-muted hover:bg-background"}`}
                 >
-                  {namespace.name}
+                  <span>{namespace.name}</span>
+                  <span className="text-[11px] uppercase tracking-wide">{namespace.projection || "layer"}</span>
                 </button>
               );
             })}
             {markerFilter.length > 0 ? (
-              <button
-                onClick={onClearMarkerFilter}
-                className="cursor-pointer rounded-full border border-border px-2 py-1 text-xs text-muted"
-              >
-                Clear
+              <button onClick={onClearMarkerFilter} className="cursor-pointer rounded-xl border border-border px-3 py-2 text-sm text-muted hover:bg-background">
+                Clear filters
               </button>
             ) : null}
           </div>
+        </InfoCard>
+
+        <InfoCard icon={<FiCode />} title="Active markers">
           <div className="space-y-3">
             {visibleMarkers.slice(0, 6).map((marker) => (
               <MarkerCard
@@ -427,17 +441,13 @@ function MarcadoInspectorSurface({
                 onDelete={() => onDeleteMarker(marker)}
               />
             ))}
-            {visibleMarkers.length > 6 ? (
-              <EmptyState text={`${visibleMarkers.length - 6} more markers are hidden in this focused view.`} />
-            ) : null}
+            {visibleMarkers.length > 6 ? <EmptyState text={`${visibleMarkers.length - 6} more markers are hidden in this focused view.`} /> : null}
             {visibleMarkers.length === 0 ? <EmptyState text="No markers match the active filters." /> : null}
           </div>
         </InfoCard>
 
-        <details className="rounded-3xl border border-border bg-background p-4">
-          <summary className="cursor-pointer list-none text-sm font-semibold uppercase tracking-[0.14em] text-muted">
-            Advanced structure
-          </summary>
+        <details className="rounded-3xl border border-border bg-background/65 p-4">
+          <summary className="cursor-pointer list-none text-sm font-semibold uppercase tracking-[0.14em] text-muted">Advanced structure</summary>
           <div className="mt-4 space-y-5">
             <div>
               <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">Namespaces</div>
@@ -458,15 +468,30 @@ function MarcadoInspectorSurface({
             </div>
 
             <div>
+              <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">Graph edges</div>
+              {document.graphEdges.length === 0 ? (
+                <EmptyState text="No explicit graph edges declared." />
+              ) : (
+                <div className="space-y-3">
+                  {document.graphEdges.map((edge, index) => (
+                    <div key={`${edge.namespace}-${edge.type}-${index}`} className="rounded-2xl border border-border bg-surface p-3 text-sm">
+                      <div className="font-medium text-primary">{edge.namespace}:{edge.type}</div>
+                      <div className="mt-2 break-words text-muted">{edge.from}</div>
+                      <div className="break-words text-muted">{edge.to}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
               <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">Diagnostics</div>
               {document.diagnostics.length === 0 ? (
                 <EmptyState text="No marker pairing issues are currently visible." />
               ) : (
                 <ul className="space-y-2 text-sm text-warning">
                   {document.diagnostics.map((diagnostic) => (
-                    <li key={diagnostic} className="rounded-xl border border-warning/20 bg-warning/10 p-3">
-                      {diagnostic}
-                    </li>
+                    <li key={diagnostic} className="rounded-xl border border-warning/20 bg-warning/10 p-3">{diagnostic}</li>
                   ))}
                 </ul>
               )}
@@ -478,122 +503,11 @@ function MarcadoInspectorSurface({
   );
 }
 
-function SldbOverviewSurface({ document }: { document: MarcadoDocument }) {
-  return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      <InfoCard icon={<FiFileText />} title="Document contract context">
-        <div className="space-y-3">
-          <KeyValue label="Document ID" value={document.id} />
-          <KeyValue label="Contract" value={document.type ? `${document.type} contract` : "document contract"} />
-          <KeyValue label="Namespaces" value={String(document.namespaces.length)} />
-          <KeyValue label="Graph edges" value={String(document.graphEdges.length)} />
-        </div>
-      </InfoCard>
-
-      <InfoCard icon={<FiHash />} title="Why this is separate">
-        <div className="space-y-3 text-sm leading-6 text-muted">
-          <p>Marcado editing and rendering are the day-to-day writing surface.</p>
-          <p>SLDB context is where document contract readiness, advisories, and tracked-document preparation belong.</p>
-          <p>This keeps writing tasks from competing with semantic workflow detail in the same default view.</p>
-        </div>
-      </InfoCard>
-
-      <InfoCard icon={<FiGitBranch />} title="Graph edges">
-        {document.graphEdges.length === 0 ? (
-          <EmptyState text="No explicit graph edges declared." />
-        ) : (
-          <div className="space-y-3">
-            {document.graphEdges.map((edge, index) => (
-              <div key={`${edge.namespace}-${edge.type}-${index}`} className="rounded-2xl border border-border bg-background p-3 text-sm">
-                <div className="font-medium text-primary">{edge.namespace}:{edge.type}</div>
-                <div className="mt-2 break-words text-muted">{edge.from}</div>
-                <div className="break-words text-muted">{edge.to}</div>
-              </div>
-            ))}
-          </div>
-        )}
-      </InfoCard>
-
-      <InfoCard icon={<FiCode />} title="Anchors in context">
-        <div className="space-y-3">
-          {document.markers.slice(0, 8).map((marker) => (
-            <div key={marker.key} className="rounded-2xl border border-border bg-background p-3 text-sm">
-              <div className="font-medium text-foreground">{marker.key}</div>
-              <div className="mt-1 break-all text-xs text-primary">{marker.localAnchor}</div>
-            </div>
-          ))}
-        </div>
-      </InfoCard>
-    </div>
-  );
-}
-
-function SldbContextSidebar({
-  document,
-  validationSummary,
-}: {
-  document: MarcadoDocument;
-  validationSummary: SldbValidationSummary | null;
-}) {
-  return (
-    <aside className="overflow-y-auto border-t border-border bg-surface xl:border-t-0 xl:border-l">
-      <div className="space-y-5 p-5">
-        <InfoCard icon={<FiFileText />} title="Identity">
-          <KeyValue label="ID" value={document.id} />
-          <KeyValue label="Type" value={document.type} />
-          <KeyValue label="Markers" value={String(document.markers.length)} />
-          <KeyValue label="Diagnostics" value={String(document.diagnostics.length)} />
-        </InfoCard>
-
-        <InfoCard icon={<FiHash />} title="Advisories">
-          {validationSummary?.advisoryNotes?.length ? (
-            <ul className="space-y-2 text-sm text-muted">
-              {validationSummary.advisoryNotes.map((note) => (
-                <li key={note} className="rounded-xl border border-border bg-background p-3">
-                  {note}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <EmptyState text="No extra SLDB advisories are visible right now." />
-          )}
-        </InfoCard>
-
-        <InfoCard icon={<FiGitBranch />} title="Diagnostics">
-          {document.diagnostics.length === 0 ? (
-            <EmptyState text="No marker pairing issues are currently visible." />
-          ) : (
-            <ul className="space-y-2 text-sm text-warning">
-              {document.diagnostics.map((diagnostic) => (
-                <li key={diagnostic} className="rounded-xl border border-warning/20 bg-warning/10 p-3">
-                  {diagnostic}
-                </li>
-              ))}
-            </ul>
-          )}
-        </InfoCard>
-      </div>
-    </aside>
-  );
-}
-
-function ViewButton({
-  active,
-  onClick,
-  icon,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  icon: ReactNode;
-  children: ReactNode;
-}) {
+function ViewButton({ active, onClick, icon, children }: { active: boolean; onClick: () => void; icon: ReactNode; children: ReactNode }) {
   return (
     <button
       onClick={onClick}
-      className={`inline-flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition ${
-        active ? "bg-primary text-on-primary" : "text-muted hover:bg-background hover:text-foreground"
-      }`}
+      className={`inline-flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm transition ${active ? "bg-primary text-on-primary shadow-sm" : "text-muted hover:bg-background hover:text-foreground"}`}
     >
       {icon}
       {children}
@@ -603,32 +517,27 @@ function ViewButton({
 
 function ActionButton({ onClick, icon, label }: { onClick: () => void; icon: ReactNode; label: string }) {
   return (
-    <button
-      onClick={onClick}
-      className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground hover:bg-surface-hover"
-    >
+    <button onClick={onClick} className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-background/80 px-3 py-2 text-sm text-foreground hover:bg-surface-hover">
       {icon}
       {label}
     </button>
   );
 }
 
+function MiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-border bg-background px-3 py-2">
+      <div className="text-[11px] uppercase tracking-wide text-muted">{label}</div>
+      <div className="mt-1 text-sm font-semibold text-foreground">{value}</div>
+    </div>
+  );
+}
+
 function InterpretationModeBadge({ mode }: { mode: DocumentInterpretationMode }) {
-  const tone =
-    mode === "runtime"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-      : mode === "fallback"
-        ? "border-amber-200 bg-amber-50 text-amber-700"
-        : "border-border bg-surface text-muted";
+  const tone = mode === "runtime" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : mode === "fallback" ? "border-amber-200 bg-amber-50 text-amber-700" : "border-border bg-surface text-muted";
   const label = mode === "runtime" ? "Marcado runtime" : mode === "fallback" ? "Fallback parsing" : "Local parse";
 
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide ${tone}`}
-    >
-      {label}
-    </span>
-  );
+  return <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide ${tone}`}>{label}</span>;
 }
 
 function UploadActionButton({ onChange }: { onChange: React.ChangeEventHandler<HTMLInputElement> }) {
@@ -636,75 +545,14 @@ function UploadActionButton({ onChange }: { onChange: React.ChangeEventHandler<H
     <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground hover:bg-surface-hover">
       <FiUpload />
       <span>Upload file</span>
-      <input
-        type="file"
-        accept=".md,text/markdown,text/plain"
-        className="hidden"
-        aria-label="Upload file"
-        onChange={onChange}
-      />
+      <input type="file" accept=".md,text/markdown,text/plain" className="hidden" aria-label="Upload file" onChange={onChange} />
     </label>
   );
 }
 
-function SldbValidationCard({ validationSummary }: { validationSummary: SldbValidationSummary }) {
+function InfoCard({ icon, title, children }: { icon: ReactNode; title: string; children: ReactNode }) {
   return (
-    <InfoCard icon={<FiFileText />} title="SLDB validation">
-      <div className="space-y-3">
-        <div className="rounded-2xl border border-border bg-background p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <div className="text-sm font-medium text-foreground">{validationSummary.contractLabel}</div>
-              <div className="mt-1 text-xs text-muted">Provenance: {validationSummary.provenance}</div>
-            </div>
-            <ValidationStateBadge state={validationSummary.state} />
-          </div>
-        </div>
-
-        {validationSummary.blockingIssues.length > 0 ? (
-          <div className="space-y-2">
-            <div className="text-xs font-semibold uppercase tracking-wide text-muted">Blocking issues</div>
-            <ul className="space-y-2 text-sm text-warning">
-              {validationSummary.blockingIssues.map((issue) => (
-                <li key={issue} className="rounded-xl border border-warning/20 bg-warning/10 p-3">
-                  {issue}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : (
-          <EmptyState text="No local structural blockers are visible through the SLDB seam right now." />
-        )}
-      </div>
-    </InfoCard>
-  );
-}
-
-function ValidationStateBadge({ state }: { state: SldbValidationSummary["state"] }) {
-  const tone =
-    state === "ready"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-      : "border-amber-200 bg-amber-50 text-amber-700";
-  const label = state === "ready" ? "Ready" : "Needs attention";
-
-  return (
-    <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide ${tone}`}>
-      {label}
-    </span>
-  );
-}
-
-function InfoCard({
-  icon,
-  title,
-  children,
-}: {
-  icon: ReactNode;
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
+    <section className="rounded-[1.75rem] border border-border bg-surface/90 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.16)]">
       <div className="mb-3 flex items-center gap-2">
         <div className="text-primary">{icon}</div>
         <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted">{title}</h3>
@@ -714,43 +562,14 @@ function InfoCard({
   );
 }
 
-function KeyValue({ label, value }: { label: string; value: string }) {
+function MarkerCard({ marker, onRename, onDelete }: { marker: MarkerRange; onRename: () => void; onDelete: () => void }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-background px-3 py-2 text-sm">
-      <span className="text-muted">{label}</span>
-      <span className="break-all text-right font-medium text-foreground">{value}</span>
-    </div>
-  );
-}
-
-function MarkerCard({
-  marker,
-  onRename,
-  onDelete,
-}: {
-  marker: MarkerRange;
-  onRename: () => void;
-  onDelete: () => void;
-}) {
-  return (
-    <div className="rounded-2xl border border-border bg-background p-3">
+    <div className="rounded-[1.25rem] border border-border bg-background/90 p-3.5">
       <div className="flex items-start justify-between gap-2">
         <div className="break-words text-sm font-medium text-foreground">{marker.key}</div>
         <div className="flex gap-1">
-          <button
-            onClick={onRename}
-            aria-label={`Rename ${marker.key}`}
-            className="cursor-pointer rounded-md border border-border p-1 text-muted hover:bg-surface-hover"
-          >
-            <FiEdit2 />
-          </button>
-          <button
-            onClick={onDelete}
-            aria-label={`Delete ${marker.key}`}
-            className="cursor-pointer rounded-md border border-border p-1 text-muted hover:bg-surface-hover"
-          >
-            <FiTrash2 />
-          </button>
+          <button onClick={onRename} aria-label={`Rename ${marker.key}`} className="cursor-pointer rounded-md border border-border p-1 text-muted hover:bg-surface-hover"><FiEdit2 /></button>
+          <button onClick={onDelete} aria-label={`Delete ${marker.key}`} className="cursor-pointer rounded-md border border-border p-1 text-muted hover:bg-surface-hover"><FiTrash2 /></button>
         </div>
       </div>
       <div className="mt-1 break-all text-xs text-primary">{marker.localAnchor}</div>
@@ -763,17 +582,7 @@ function MarkerCard({
   );
 }
 
-function MarkerComposer({
-  selectionText,
-  namespaces,
-  onAddMarker,
-  onCancel,
-}: {
-  selectionText: string;
-  namespaces: string[];
-  onAddMarker: (namespace: string, classification: string) => void;
-  onCancel: () => void;
-}) {
+function MarkerComposer({ selectionText, namespaces, onAddMarker, onCancel }: { selectionText: string; namespaces: string[]; onAddMarker: (namespace: string, classification: string) => void; onCancel: () => void; }) {
   const [namespace, setNamespace] = useState(namespaces[0] ?? "sem");
   const [classification, setClassification] = useState("");
 
@@ -783,45 +592,14 @@ function MarkerComposer({
   }, [selectionText, namespaces]);
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-primary/30 bg-primary/8 px-3 py-2">
+    <div className="flex flex-wrap items-center gap-2 rounded-[1.25rem] border border-primary/30 bg-primary/8 px-3 py-2 shadow-[0_10px_30px_rgba(63,94,251,0.08)]">
       <span className="max-w-48 truncate text-xs text-muted">“{selectionText}”</span>
-      <select
-        aria-label="Marker namespace"
-        value={namespace}
-        onChange={(event) => setNamespace(event.target.value)}
-        className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm text-foreground outline-none"
-      >
-        {namespaces.length > 0 ? (
-          namespaces.map((item) => (
-            <option key={item} value={item}>
-              {item}
-            </option>
-          ))
-        ) : (
-          <option value="sem">sem</option>
-        )}
+      <select aria-label="Marker namespace" value={namespace} onChange={(event) => setNamespace(event.target.value)} className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm text-foreground outline-none">
+        {namespaces.length > 0 ? namespaces.map((item) => <option key={item} value={item}>{item}</option>) : <option value="sem">sem</option>}
       </select>
-      <input
-        aria-label="Marker classification"
-        value={classification}
-        onChange={(event) => setClassification(event.target.value)}
-        placeholder="concept.new_marker"
-        className="min-w-48 rounded-lg border border-border bg-background px-2 py-1.5 text-sm text-foreground outline-none"
-      />
-      <button
-        onClick={() => onAddMarker(namespace, classification)}
-        className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-sm text-on-primary"
-      >
-        <FiPlus />
-        Add marker
-      </button>
-      <button
-        onClick={onCancel}
-        className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm text-muted hover:bg-background"
-      >
-        <FiX />
-        Cancel
-      </button>
+      <input aria-label="Marker classification" value={classification} onChange={(event) => setClassification(event.target.value)} placeholder="concept.new_marker" className="min-w-48 rounded-lg border border-border bg-background px-2 py-1.5 text-sm text-foreground outline-none" />
+      <button onClick={() => onAddMarker(namespace, classification)} className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-sm text-on-primary"><FiPlus />Add marker</button>
+      <button onClick={onCancel} className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm text-muted hover:bg-background"><FiX />Cancel</button>
     </div>
   );
 }
@@ -832,39 +610,28 @@ function EmptyState({ text }: { text: string }) {
 
 function buildHighlightedMarkdown(markdown: string, markers: MarkerRange[]): string {
   if (markers.length === 0) return markdown;
-
-  const boundaries = Array.from(new Set([0, markdown.length, ...markers.flatMap((marker) => [marker.start, marker.end])])).sort(
-    (a, b) => a - b
-  );
-
+  const boundaries = Array.from(new Set([0, markdown.length, ...markers.flatMap((marker) => [marker.start, marker.end])])).sort((a, b) => a - b);
   let result = "";
-
   for (let i = 0; i < boundaries.length - 1; i += 1) {
     const start = boundaries[i];
     const end = boundaries[i + 1];
     if (start === end) continue;
-
     const chunk = markdown.slice(start, end);
     const active = markers.filter((marker) => marker.start <= start && marker.end >= end);
-
     if (active.length === 0) {
       result += chunk;
       continue;
     }
-
     const namespaces = Array.from(new Set(active.map((marker) => marker.namespace)));
     const classNames = ["marker-highlight", ...namespaces.map((namespace) => `marker-highlight-${namespace}`)].join(" ");
     const title = escapeHtml(active.map((marker) => marker.key).join(" | "));
-
     result += `<span class="${classNames}" title="${title}" data-marker-count="${active.length}">${chunk}</span>`;
   }
-
   return result;
 }
 
 function getTextOffset(container: Node, node: Node, offset: number): number {
   let charCount = 0;
-
   function walk(current: Node): boolean {
     if (current === node) {
       if (current.nodeType === Node.TEXT_NODE) {
@@ -876,19 +643,15 @@ function getTextOffset(container: Node, node: Node, offset: number): number {
       }
       return true;
     }
-
     if (current.nodeType === Node.TEXT_NODE) {
       charCount += (current.textContent || "").length;
       return false;
     }
-
     for (let i = 0; i < current.childNodes.length; i += 1) {
       if (walk(current.childNodes[i])) return true;
     }
-
     return false;
   }
-
   walk(container);
   return charCount;
 }

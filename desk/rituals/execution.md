@@ -7,4 +7,4 @@ tags:
 
 # Execution ritual
 
-Review the board through deskops, confirm the board is clean, confirm the git worktree is clean, bind the relevant pills, and implement only one active task scope at a time for sldb-ui.
+Review the board, bind the relevant pills, keep scope tight, and implement only the active task for marcado-ui.

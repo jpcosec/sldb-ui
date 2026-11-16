@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { FiBookOpen, FiEdit2, FiFileText, FiFolder, FiPlus, FiSave, FiUpload } from "react-icons/fi";
-import { DocumentWorkspace, type DocumentInterpretationMode, type WorkspaceSurface } from "./components/document-workspace";
+import { DocumentWorkspace, type DocumentInterpretationMode } from "./components/document-workspace";
 import { WorkspaceNavigator } from "./components/workspace-navigator";
 import { WorkspaceMain, WorkspaceShell, WorkspaceSidebar, WorkspaceSidebarHeader } from "./components/workspace-shell";
 import { loadDocuments } from "./data/documents";
 import { marcadoAdapter } from "./lib/marcado-adapter";
 import { type MarcadoDocument, type MarkerRange } from "./lib/marcado";
-import { sldbAdapter } from "./lib/sldb-adapter";
 import {
   basenameWithoutExtension,
   createInitialWorkspaceDocumentStore,
@@ -46,7 +45,6 @@ export default function App() {
     )
   );
   const [workspaceUi, setWorkspaceUi] = useState<WorkspaceUiState>(() => createInitialWorkspaceUiState());
-  const [workspaceSurface, setWorkspaceSurface] = useState<WorkspaceSurface>("marcado");
 
   const { viewMode, notice, selectionState, markerFilter } = workspaceUi;
 
@@ -164,19 +162,6 @@ export default function App() {
 
   const selectedDocumentMode = selectedDoc ? (documentModes[selectedDoc.slug] ?? "local") : "local";
 
-  const selectedValidationSummary = useMemo(
-    () =>
-      selectedDoc
-        ? sldbAdapter.inspectValidation({
-            document: selectedDoc,
-            interpretationMode: selectedDocumentMode,
-            origin: selectedEntry?.origin,
-            filePath: selectedEntry?.filePath,
-          })
-        : null,
-    [selectedDoc, selectedDocumentMode, selectedEntry?.filePath, selectedEntry?.origin]
-  );
-
   const handleSourceChange = (value: string) => {
     if (!selectedDoc) return;
     setWorkspaceDocuments((current) =>
@@ -251,17 +236,6 @@ export default function App() {
       runtimeDoc.mode === "runtime"
         ? `Refreshed ${selectedDoc.id} from Marcado runtime`
         : `Marcado runtime unavailable; refreshed ${selectedDoc.id} with degraded fallback parsing`
-    );
-  };
-
-  const handleCheckSldbValidation = () => {
-    if (!selectedDoc || !selectedValidationSummary) return;
-
-    setWorkspaceSurface("sldb");
-    setNotice(
-      selectedValidationSummary.state === "ready"
-        ? `SLDB validation found no local structural blockers for ${selectedDoc.id}`
-        : `SLDB validation found ${selectedValidationSummary.blockingIssues.length} structural blocker(s) for ${selectedDoc.id}`
     );
   };
 
@@ -595,42 +569,17 @@ export default function App() {
       sidebar={
         <WorkspaceSidebar>
           <WorkspaceSidebarHeader
-            eyebrow="@sldb/ui"
-            title="Open a structured Markdown document"
-            description="Use Marcado for writing and rendering. Open the separate SLDB context only when you need contract or validation information."
+            eyebrow="@marcado/ui"
+            title="Open a semantic Markdown document"
+            description="Use Marcado to read, render, inspect, and edit semantic Markdown documents with runtime-backed structure." 
           />
 
-          <div className="p-4 space-y-5">
-            <section className="space-y-3">
-              <div>
-                <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted">Choose the purpose</h2>
-                <p className="mt-2 text-sm text-muted leading-6">
-                  Keep writing and structure inspection in the Marcado workspace. Switch to SLDB context only for validation-oriented checks.
-                </p>
-              </div>
-              <div className="grid gap-3">
-                <PurposeCard
-                  title="Marcado workspace"
-                  description="Read, render, edit, and save the Markdown document without mixing in SLDB workflow detail."
-                  badge="default"
-                  active={workspaceSurface === "marcado"}
-                  onClick={() => setWorkspaceSurface("marcado")}
-                />
-                <PurposeCard
-                  title="SLDB context"
-                  description="Check contract readiness, advisories, and document context in a separate surface."
-                  badge="secondary"
-                  active={workspaceSurface === "sldb"}
-                  onClick={() => setWorkspaceSurface("sldb")}
-                />
-              </div>
-            </section>
-
+          <div className="space-y-5 p-4 lg:p-5">
             <section className="space-y-3">
               <div>
                 <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted">Start here</h2>
                 <p className="mt-2 text-sm text-muted leading-6">
-                  Pick the fastest path into the document. Once open, the Marcado workspace stays focused on reading and editing.
+                  Pick the fastest path into a document, then work directly in rendered or source mode with semantic filters.
                 </p>
               </div>
               <div className="space-y-3">
@@ -737,14 +686,11 @@ export default function App() {
               notice={notice}
               fileLabel={selectedEntry?.filePath ?? selectedEntry?.fileName ?? null}
               interpretationMode={selectedDocumentMode}
-              validationSummary={selectedValidationSummary}
-              workspaceSurface={workspaceSurface}
               selectionState={selectionState}
               canUseNativeFiles={canUseNativeFiles}
               markerFilter={markerFilter}
               visibleMarkers={visibleMarkers}
               onChangeViewMode={setViewMode}
-              onChangeWorkspaceSurface={setWorkspaceSurface}
               onSourceChange={handleSourceChange}
               onSelectRange={setSelectionState}
               onClearSelection={() => setSelectionState(null)}
@@ -754,11 +700,11 @@ export default function App() {
                   ? current.filter((item) => item !== namespace)
                   : [...current, namespace]
               )}
+              onSetMarkerFilter={(nextFilter) => setMarkerFilter(nextFilter)}
               onClearMarkerFilter={() => setMarkerFilter([])}
               onRenameMarker={handleRenameMarker}
               onDeleteMarker={handleDeleteMarker}
               onRefreshRuntime={handleRefreshRuntime}
-              onCheckSldbValidation={handleCheckSldbValidation}
               onSaveDraft={handleSaveDraft}
               onSaveFile={handleSaveFile}
               onLoad={handleLoad}
@@ -779,7 +725,7 @@ function ActionButton({ onClick, icon, label }: { onClick: () => void; icon: Rea
   return (
     <button
       onClick={onClick}
-      className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground hover:bg-surface-hover"
+      className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-background/80 px-3 py-2 text-sm text-foreground hover:bg-surface-hover"
     >
       {icon}
       {label}
@@ -804,8 +750,8 @@ function PurposeCard({
     <button
       onClick={onClick}
       aria-pressed={active}
-      className={`w-full rounded-2xl border p-4 text-left transition ${
-        active ? "border-primary/40 bg-primary/10" : "border-border bg-background hover:border-primary/30 hover:bg-surface-hover"
+      className={`w-full rounded-[1.5rem] border p-4 text-left transition ${
+        active ? "border-primary/40 bg-primary/12 shadow-[0_8px_24px_rgba(91,96,255,0.12)]" : "border-border bg-background/80 hover:border-primary/30 hover:bg-surface-hover"
       }`}
     >
       <div className="flex items-center justify-between gap-3">
@@ -821,7 +767,7 @@ function PurposeCard({
 
 function CompactSection({ title, meta, children }: { title: string; meta?: string; children: ReactNode }) {
   return (
-    <details className="rounded-2xl border border-border bg-background p-3">
+    <details className="rounded-[1.5rem] border border-border bg-background/70 p-3">
       <summary className="cursor-pointer list-none">
         <div className="flex items-center justify-between gap-3">
           <div className="text-sm font-semibold text-foreground">{title}</div>
@@ -855,7 +801,7 @@ function EntryActionCard({
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel ?? title}
-      className={`block w-full rounded-2xl border p-4 text-left transition ${
+      className={`block w-full rounded-[1.5rem] border p-4 text-left transition ${
         disabled
           ? "cursor-not-allowed border-border bg-background/70 text-muted opacity-70"
           : "cursor-pointer border-border bg-background hover:border-primary/40 hover:bg-primary/5"
@@ -897,7 +843,7 @@ function UploadActionCard({
   onChange: React.ChangeEventHandler<HTMLInputElement>;
 }) {
   return (
-    <label className="block cursor-pointer rounded-2xl border border-border bg-background p-4 text-left transition hover:border-primary/40 hover:bg-primary/5">
+    <label className="block cursor-pointer rounded-[1.5rem] border border-border bg-background/80 p-4 text-left transition hover:border-primary/40 hover:bg-primary/5">
       <div className="flex items-start gap-3">
         <div className="mt-0.5 rounded-xl border border-primary/20 bg-primary/10 p-2 text-primary">
           {icon}

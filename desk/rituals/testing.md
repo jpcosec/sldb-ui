@@ -7,4 +7,4 @@ tags:
 
 # Testing ritual
 
-Run the smallest relevant validation first while implementing each task, then finish the overall slice with end-to-end proof before product closeout.
+Run the smallest relevant validation first, then broaden coverage when marcado-ui changes shared behavior.

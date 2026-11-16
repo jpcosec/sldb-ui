@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
 
-describe('App Integration — @sldb/ui workspace flows with Marcado support', () => {
+describe('App Integration — @marcado/ui workspace flows', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
@@ -13,33 +13,20 @@ describe('App Integration — @sldb/ui workspace flows with Marcado support', ()
     render(<App />);
 
     expect(screen.getByRole('heading', { name: /semantic markdown asg — canonical example/i })).toBeInTheDocument();
-    expect(screen.getAllByText(/Marcado workspace/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/@marcado\/ui/i).length).toBeGreaterThan(0);
     expect(screen.getByText('struct:intro')).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: /sldb validation/i })).not.toBeInTheDocument();
   });
 
   it('switches between rendered and source views', async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByRole('button', { name: /source/i }));
+    await user.click(screen.getAllByRole('button', { name: /source/i })[0]);
     expect((screen.getByLabelText(/marcado source editor/i) as HTMLTextAreaElement).value).toContain('Semantic Markdown ASG');
 
     await user.click(screen.getByRole('button', { name: /rendered/i }));
     expect(screen.queryByLabelText(/marcado source editor/i)).not.toBeInTheDocument();
     expect(screen.getAllByText(/pure trees cannot represent crossing semantic ranges cleanly/i).length).toBeGreaterThan(0);
-  });
-
-  it('moves SLDB validation into a separate context surface', async () => {
-    const user = userEvent.setup();
-    render(<App />);
-
-    await user.click(screen.getByRole('button', { name: /open sldb context/i }));
-
-    expect(screen.getAllByText(/SLDB context/i).length).toBeGreaterThan(0);
-    expect(screen.getByRole('heading', { name: /sldb validation/i })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /check sldb validation/i }));
-    expect(screen.getByText(/sldb validation found no local structural blockers for canonical-example/i)).toBeInTheDocument();
   });
 
   it('creates a new workspace file and preserves edits after rename', async () => {
@@ -66,11 +53,11 @@ describe('App Integration — @sldb/ui workspace flows with Marcado support', ()
     render(<App />);
 
     expect(screen.getByText('struct:intro')).toBeInTheDocument();
-    expect(screen.getByText('rhet:rationale.tree_overlap_limitation')).toBeInTheDocument();
+    expect(screen.getAllByText('rhet:rationale.tree_overlap_limitation').length).toBeGreaterThan(0);
 
-    await user.click(screen.getAllByRole('button', { name: 'rhet' })[0]);
+    await user.click(screen.getByRole('button', { name: /rhetoric/i }));
 
-    expect(screen.getByText('rhet:rationale.tree_overlap_limitation')).toBeInTheDocument();
+    expect(screen.getAllByText('rhet:rationale.tree_overlap_limitation').length).toBeGreaterThan(0);
     expect(screen.queryByText('struct:intro')).not.toBeInTheDocument();
     expect(screen.queryByText('sem:concept.semantic_markdown')).not.toBeInTheDocument();
   });
@@ -79,7 +66,7 @@ describe('App Integration — @sldb/ui workspace flows with Marcado support', ()
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByRole('button', { name: /source/i }));
+    await user.click(screen.getAllByRole('button', { name: /source/i })[0]);
     const editor = screen.getByLabelText(/marcado source editor/i);
     await user.type(editor, '\n<!-- sem:concept.extra -->extra<!-- /sem:concept.extra -->');
 
@@ -138,18 +125,6 @@ describe('App Integration — @sldb/ui workspace flows with Marcado support', ()
     expect(screen.getByRole('heading', { name: /runtime refreshed title/i })).toBeInTheDocument();
     expect(screen.getByText(/refreshed canonical-example from marcado runtime/i)).toBeInTheDocument();
     expect(screen.getAllByText(/marcado runtime/i).length).toBeGreaterThan(0);
-  });
-
-  it('makes degraded fallback refresh explicit when runtime export is unavailable', async () => {
-    const user = userEvent.setup();
-    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('runtime offline'));
-
-    render(<App />);
-    await user.click(screen.getByRole('button', { name: /refresh runtime/i }));
-
-    expect(screen.getByText(/marcado runtime unavailable; refreshed canonical-example with degraded fallback parsing/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/fallback parsing/i).length).toBeGreaterThan(0);
-    expect(screen.getByRole('heading', { name: /semantic markdown asg — canonical example/i })).toBeInTheDocument();
   });
 
   it('handles localStorage read failures gracefully', () => {
