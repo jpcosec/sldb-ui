@@ -1,0 +1,271 @@
+{
+  "timings": [
+    {
+      "screen": "home",
+      "ms": 512,
+      "error": null
+    },
+    {
+      "screen": "open-sample",
+      "ms": 95,
+      "error": null
+    },
+    {
+      "screen": "rendered-all",
+      "ms": 110,
+      "error": null
+    },
+    {
+      "screen": "source-view",
+      "ms": 120,
+      "error": null
+    },
+    {
+      "screen": "layer-structure",
+      "ms": 234,
+      "error": null
+    },
+    {
+      "screen": "layer-semantics",
+      "ms": 977,
+      "error": null
+    },
+    {
+      "screen": "layer-rhetoric",
+      "ms": 262,
+      "error": null
+    },
+    {
+      "screen": "layer-all",
+      "ms": 236,
+      "error": null
+    },
+    {
+      "screen": "selection",
+      "ms": 898,
+      "error": null
+    },
+    {
+      "screen": "rename-marker",
+      "ms": 795,
+      "error": null
+    },
+    {
+      "screen": "rename-cancel",
+      "ms": 608,
+      "error": null
+    },
+    {
+      "screen": "delete-marker",
+      "ms": 642,
+      "error": null
+    },
+    {
+      "screen": "final-rendered",
+      "ms": 52,
+      "error": null
+    }
+  ],
+  "totalMs": 5541,
+  "checks": [
+    {
+      "name": "rendered/all: spans DOM == buildHighlightedMarkdown(lib)",
+      "ok": true,
+      "detail": {
+        "got": 6,
+        "exp": 6
+      }
+    },
+    {
+      "name": "rendered/all: todo span tiene marker-highlight-<ns> y data-marker-count",
+      "ok": true,
+      "detail": [
+        "marker-highlight marker-highlight-struct#1",
+        "marker-highlight marker-highlight-sem#1",
+        "marker-highlight marker-highlight-sem#2",
+        "marker-highlight marker-highlight-sem#1",
+        "marker-highlight marker-highlight-rhet#1",
+        "marker-highlight marker-highlight-rhet#1"
+      ]
+    },
+    {
+      "name": "rendered/all: hay tramo solapado data-marker-count=2",
+      "ok": true,
+      "detail": [
+        {
+          "cls": "marker-highlight marker-highlight-sem",
+          "count": "2",
+          "title": "sem:concept.semantic_markdown | sem:function.definition"
+        }
+      ]
+    },
+    {
+      "name": "source: textarea con el canónico (frontmatter + 5 marcadores)",
+      "ok": true,
+      "detail": 1312
+    },
+    {
+      "name": "capa Structure: spans == lib (1)",
+      "ok": true,
+      "detail": {
+        "got": 1,
+        "exp": 1,
+        "cls": [
+          "marker-highlight marker-highlight-struct"
+        ]
+      }
+    },
+    {
+      "name": "capa Semantics: spans == lib (3)",
+      "ok": true,
+      "detail": {
+        "got": 3,
+        "exp": 3,
+        "cls": [
+          "marker-highlight marker-highlight-sem"
+        ]
+      }
+    },
+    {
+      "name": "capa Rhetoric: spans == lib (2)",
+      "ok": true,
+      "detail": {
+        "got": 2,
+        "exp": 2,
+        "cls": [
+          "marker-highlight marker-highlight-rhet"
+        ]
+      }
+    },
+    {
+      "name": "capa All: spans == lib (6)",
+      "ok": true,
+      "detail": {
+        "got": 6,
+        "exp": 6,
+        "cls": [
+          "marker-highlight marker-highlight-struct",
+          "marker-highlight marker-highlight-sem",
+          "marker-highlight marker-highlight-rhet"
+        ]
+      }
+    },
+    {
+      "name": "getTextOffset (nodo texto) en DOM real == indexOf en textContent",
+      "ok": true,
+      "detail": {
+        "off": 285,
+        "expected": 285,
+        "pOff": 347,
+        "pExp": 347
+      }
+    },
+    {
+      "name": "getTextOffset (nodo elemento, offset=hijos) == fin del <p>",
+      "ok": true,
+      "detail": {
+        "off": 285,
+        "expected": 285,
+        "pOff": 347,
+        "pExp": 347
+      }
+    },
+    {
+      "name": "mouseup con selección abre el composer con el texto",
+      "ok": true
+    },
+    {
+      "name": "add marker desde selección envuelve \"Pure trees\" en el source",
+      "ok": true,
+      "detail": "overlap_limitation -->\n<!-- sem:concept.t1_probe -->Pure trees<!-- /sem:concept.t1_probe --> cannot represent crossing s"
+    },
+    {
+      "name": "reset devuelve el source original",
+      "ok": true,
+      "detail": 1312
+    },
+    {
+      "name": "rename: window.prompt \"Rename marker key\" con default struct:intro",
+      "ok": true,
+      "detail": [
+        {
+          "type": "prompt",
+          "message": "Rename marker key",
+          "default": "struct:intro",
+          "answer": "struct:intro_t1"
+        },
+        {
+          "type": "prompt",
+          "message": "Rename marker key",
+          "default": "sem:function.definition",
+          "answer": null
+        }
+      ]
+    },
+    {
+      "name": "rename: source == before con la clave cambiada en apertura y cierre",
+      "ok": true
+    },
+    {
+      "name": "rename: source UI == renameMarkerInSource(lib)",
+      "ok": true
+    },
+    {
+      "name": "rename: frontmatter intacto",
+      "ok": true,
+      "detail": 537
+    },
+    {
+      "name": "rename: inspector muestra Rename struct:intro_t1",
+      "ok": true
+    },
+    {
+      "name": "rename: span con title struct:intro_t1",
+      "ok": true
+    },
+    {
+      "name": "rename cancelado no cambia el source",
+      "ok": true
+    },
+    {
+      "name": "delete: source == before sin apertura ni cierre del marcador",
+      "ok": true,
+      "detail": {
+        "before": 1318,
+        "after": 1257
+      }
+    },
+    {
+      "name": "delete: frontmatter intacto",
+      "ok": true
+    },
+    {
+      "name": "delete: el frontmatter sigue declarando el edge (no se toca el YAML)",
+      "ok": true
+    },
+    {
+      "name": "delete: inspector ya no lista rhet:decision.use_asg",
+      "ok": true
+    },
+    {
+      "name": "delete: ningún span con title rhet:decision.use_asg",
+      "ok": true,
+      "detail": 5
+    }
+  ],
+  "errors": [],
+  "dialogs": [
+    {
+      "type": "prompt",
+      "message": "Rename marker key",
+      "default": "struct:intro",
+      "answer": "struct:intro_t1"
+    },
+    {
+      "type": "prompt",
+      "message": "Rename marker key",
+      "default": "sem:function.definition",
+      "answer": null
+    }
+  ]
+}

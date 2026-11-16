@@ -1,0 +1,10 @@
+Board: board-001
+Title: marcado-ui Board
+status: 
+summary: 
+scope: desk
+purpose: Route the active execution set for marcado-ui.
+tasks: desk/tasks/task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts.md, desk/tasks/task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y.md, desk/tasks/task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable.md
+pills: desk/contexts/pills.md
+rituals: desk/rituals/execution.md, desk/rituals/testing.md, desk/rituals/closeout.md
+notes: Bootstrap complete. Add active task docs under `desk/tasks/` and route them here.

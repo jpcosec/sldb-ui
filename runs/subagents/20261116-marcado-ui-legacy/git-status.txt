@@ -1,0 +1,20 @@
+ M ".sldb/core/documents/TaskRefactorDoc/task-retirar-el-c\303\263digo-legacy-hu\303\251rfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts.yaml"
+ M .sldb/core/models/ReviewDoc.yaml
+ M .sldb/core/models/RunDoc.yaml
+ M .sldb/core/models/TaskRefactorDoc.yaml
+ M .sldb/core/store_index.yaml
+ M .sldb/store.yaml
+ M "desk/tasks/task-retirar-el-c\303\263digo-legacy-hu\303\251rfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts.md"
+?? ".sldb/core/documents/ReviewDoc/review-task-retirar-el-c\303\263digo-legacy-hu\303\251rfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts-evidence-atom-1.yaml"
+?? ".sldb/core/documents/ReviewDoc/review-task-retirar-el-c\303\263digo-legacy-hu\303\251rfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts-evidence-commit-1.yaml"
+?? ".sldb/core/documents/ReviewDoc/review-task-retirar-el-c\303\263digo-legacy-hu\303\251rfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts-evidence-commit-2.yaml"
+?? ".sldb/core/documents/ReviewDoc/review-task-retirar-el-c\303\263digo-legacy-hu\303\251rfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts-evidence-tests-1.yaml"
+?? ".sldb/core/documents/ReviewDoc/review-task-retirar-el-c\303\263digo-legacy-hu\303\251rfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts-goldens-1.yaml"
+?? .sldb/core/documents/RunDoc/
+?? .sldb_cache/
+?? "desk/reviews/task-retirar-el-c\303\263digo-legacy-hu\303\251rfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts/evidence-atom-1.md"
+?? "desk/reviews/task-retirar-el-c\303\263digo-legacy-hu\303\251rfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts/evidence-commit-1.md"
+?? "desk/reviews/task-retirar-el-c\303\263digo-legacy-hu\303\251rfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts/evidence-commit-2.md"
+?? "desk/reviews/task-retirar-el-c\303\263digo-legacy-hu\303\251rfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts/evidence-tests-1.md"
+?? "desk/reviews/task-retirar-el-c\303\263digo-legacy-hu\303\251rfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts/goldens-1.md"
+?? runs/

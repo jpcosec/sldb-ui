@@ -1,7 +1,7 @@
 ---
 sldb:
   by: agent
-  at: '2026-11-16T12:43:55Z'
+  at: '2026-11-16T13:15:28Z'
   authority: generated
   via: save_document_payload
 id: task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts
@@ -15,6 +15,8 @@ current_node: ritual-execution
 history: []
 references:
 - 7f0579a:desk/drawer/report-ui-purpose-gap.md (git show)
+- 649cea7
+- runs/subagents/20261116-marcado-ui-legacy/validation-rc.log
 depends_on: []
 pills: []
 files:

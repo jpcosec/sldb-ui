@@ -253,6 +253,34 @@ include:
     name: review-task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable-preflight-3
   - path: desk/reviews/task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable/bundle-3.md
     name: review-task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable-bundle-3
+  - path: desk/reviews/task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts/goldens-1.md
+    name: review-task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts-goldens-1
+  - path: desk/reviews/task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts/evidence-tests-1.md
+    name: review-task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts-evidence-tests-1
+  - path: desk/reviews/task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts/evidence-commit-1.md
+    name: review-task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts-evidence-commit-1
+  - path: desk/reviews/task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts/evidence-atom-1.md
+    name: review-task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts-evidence-atom-1
+  - path: desk/reviews/task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts/evidence-commit-2.md
+    name: review-task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts-evidence-commit-2
+  - path: desk/reviews/task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y/goldens-1.md
+    name: review-task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y-goldens-1
+  - path: desk/reviews/task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y/evidence-tests-1.md
+    name: review-task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y-evidence-tests-1
+  - path: desk/reviews/task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y/evidence-commit-1.md
+    name: review-task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y-evidence-commit-1
+  - path: desk/reviews/task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y/evidence-atom-1.md
+    name: review-task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y-evidence-atom-1
+- model: RunDoc
+  paths:
+  - path: runs/subagents/20261116-marcado-ui-legacy/run.md
+    name: run-deskops-e-df122955beac
+  - path: runs/subagents/20261116-marcado-ui-legacy-t1/run.md
+    name: run-deskops-t-8c38967ddbcf
+  - path: runs/subagents/20261116-marcado-ui-marker-helpers/run.md
+    name: run-deskops-e-92b415a0e8f0
+  - path: runs/subagents/20261116-marcado-ui-marker-helpers-t1/run.md
+    name: run-deskops-t-4f38251e37dc
 graph_backend: networkx
 policy: {}
 tag_models:

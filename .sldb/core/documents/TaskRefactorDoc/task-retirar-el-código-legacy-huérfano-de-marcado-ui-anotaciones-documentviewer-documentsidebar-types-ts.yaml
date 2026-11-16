@@ -1,7 +1,7 @@
 name: task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts
 path: desk/tasks/task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts.md
-source_hash: 3ab67b0a1821d103c99b00936b9848b33980a24b17a6d96a958e8dd61332aa31
-content_hash: 25dfa25a05cd3fc553f61cd6bc02a1439b68adaed766ad0f243bba0cafdfad67
+source_hash: 0e110f26f0b32c56cbca51a9ed974f5e088f9004ba63e412d7af9156186d17f1
+content_hash: 631d0c3a482c40f41b0ff070f89307a07d4e37e1a9a2fcff02c28e067807a170
 field_hashes:
   title: 5664d0143a54b34a34ff3c0c252bb3b67baabce508b882dba0dfe273bdca7530
   id: 3203b4115570425003aaf823d3861388d46e000b1e957a7bf64489e7f0801c43
@@ -13,7 +13,7 @@ field_hashes:
   why: c722e93304d0f2dd733c76c115799ca8dc68a5da4e9ad5172561f7f5844e47f6
   goal: a1d27809988a53d27d1769eca5d3a0af93fa2e5211e6eb58147851c70e430e3d
   scope: ec54dcf8b786a341cbfcdbae118d45dc0ad77c75b3c99b12a408af28082680de
-  references: 8ef364edcac5f13e77383e2008df6e6a513a868f476b5cc284cb59b391f5e1a5
+  references: b371676ac0bcc68aaed44879d0231210e1e4d94f0f9fe2dee8dc5fb146152346
   depends_on: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
   pills: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
   files: 4a3a8cdb08f4222dd09e04ce217d35281868fca176a95f439f8a0ea18a1b3d0d
@@ -35,6 +35,6 @@ semantic_tags:
 - workspace:desk
 provenance:
   by: agent
-  at: '2026-11-16T12:43:55Z'
+  at: '2026-11-16T13:15:28Z'
   authority: generated
   via: save_document_payload

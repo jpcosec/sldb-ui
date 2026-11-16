@@ -1,0 +1,9 @@
+
+ RUN  v4.1.9 /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui
+
+
+ Test Files  4 passed (4)
+      Tests  23 passed (23)
+   Start at  09:50:05
+   Duration  7.38s (transform 912ms, setup 478ms, import 2.13s, tests 9.20s, environment 5.63s)
+

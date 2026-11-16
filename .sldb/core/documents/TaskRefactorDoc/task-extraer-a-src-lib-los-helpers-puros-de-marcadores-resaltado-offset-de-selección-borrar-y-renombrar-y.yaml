@@ -1,7 +1,7 @@
 name: task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y
 path: desk/tasks/task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y.md
-source_hash: f462a95c3de4a9b194621fea095cb485b2e9a3ae37eaa0db230e2cf05e2e4fa2
-content_hash: 01a4a887abc7f5404680c654314498f0f9760ab21021a92222f4da8c80262d12
+source_hash: ab7f7ccbdff1f902f3179becfad5ac7342bbcec4767a349dd24278de731f6f64
+content_hash: d9474c043167ec18a47cfd5234455dd0ab7e7bfc554ef5af20cf782d57af028e
 field_hashes:
   title: 0b7231ebae39ad670a11a5e21b1f301639c4489a68255bbf602f850951b2d9fc
   id: 597c83ac41b2c667c4f1fe60b55ef2abb1cafaf66b6b4557d48d169bc014f94a
@@ -13,7 +13,7 @@ field_hashes:
   why: c008196f583f084a7c7b4fd3fc89a2ddab4cf771d1d5b30dd9c328084cf0d9d7
   goal: 7cc0d3a6e0dd9c6156ec0662ceec785026124667adf7938465ac516e83cd6353
   scope: 9a0b83cae8bdbe21603c0ec8c1eb584e2df299347ac23c2a99a970f92810f521
-  references: 8ef364edcac5f13e77383e2008df6e6a513a868f476b5cc284cb59b391f5e1a5
+  references: 0990c59b893b2996f12d399bffc13ee6cb37dd5d18198eaeb9e0e3aba312c3f5
   depends_on: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
   pills: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
   files: 463f83daf9904553c6e799687cdc09cbd69cfc2cb211e4298d8b6d34d539747a
@@ -35,6 +35,6 @@ semantic_tags:
 - workspace:desk
 provenance:
   by: agent
-  at: '2026-11-16T12:43:50Z'
+  at: '2026-11-16T13:15:31Z'
   authority: generated
   via: save_document_payload

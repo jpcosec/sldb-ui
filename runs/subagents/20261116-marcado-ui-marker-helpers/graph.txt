@@ -1,0 +1,38 @@
+Missing graph references:
+- missing_declared_target: task:task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable -> desk/drawer/report-ui-purpose-gap.md
+  provenance: desk/tasks/task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable.md:line:17:source-file-reference
+  reason: declared target was not found among extracted graph nodes
+- missing_declared_target: task:task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable -> desk/drawer/report-ui-purpose-gap.md
+  provenance: desk/tasks/task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable.md:line:38:source-file-reference
+  reason: declared target was not found among extracted graph nodes
+- missing_declared_target: task:task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable -> doc:docs/decisiones/2026-11-alcance-marcado-ui.md
+  provenance: desk/tasks/task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable.md:line:23:source-file-reference
+  reason: declared target was not found among extracted graph nodes
+- missing_declared_target: task:task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable -> doc:docs/decisiones/2026-11-alcance-marcado-ui.md
+  provenance: desk/tasks/task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable.md:line:51:source-file-reference
+  reason: declared target was not found among extracted graph nodes
+- missing_declared_target: task:task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable -> doc:docs/decisiones/2026-11-alcance-marcado-ui.md
+  provenance: desk/tasks/task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable.md:line:63:source-file-reference
+  reason: declared target was not found among extracted graph nodes
+- missing_declared_target: task:task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable -> doc:docs/decisiones/2026-11-alcance-marcado-ui.md
+  provenance: desk/tasks/task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable.md:line:64:source-file-reference
+  reason: declared target was not found among extracted graph nodes
+- missing_declared_target: task:task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable -> doc:docs/decisiones/2026-11-alcance-marcado-ui.md
+  provenance: desk/tasks/task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable.md:line:78:source-file-reference
+  reason: declared target was not found among extracted graph nodes
+- missing_declared_target: task:task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable -> doc:docs/decisiones/2026-11-alcance-marcado-ui.md
+  provenance: desk/tasks/task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable.md:line:93:source-file-reference
+  reason: declared target was not found among extracted graph nodes
+- missing_declared_target: task:task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y -> desk/drawer/report-ui-purpose-gap.md
+  provenance: desk/tasks/task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y.md:line:17:source-file-reference
+  reason: declared target was not found among extracted graph nodes
+- missing_declared_target: task:task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y -> desk/drawer/report-ui-purpose-gap.md
+  provenance: desk/tasks/task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y.md:line:41:source-file-reference
+  reason: declared target was not found among extracted graph nodes
+- missing_declared_target: task:task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts -> desk/drawer/report-ui-purpose-gap.md
+  provenance: desk/tasks/task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts.md:line:17:source-file-reference
+  reason: declared target was not found among extracted graph nodes
+- missing_declared_target: task:task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts -> desk/drawer/report-ui-purpose-gap.md
+  provenance: desk/tasks/task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts.md:line:49:source-file-reference
+  reason: declared target was not found among extracted graph nodes
+12 missing, 0 informational

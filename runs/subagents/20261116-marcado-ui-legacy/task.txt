@@ -1,0 +1,8 @@
+Task: task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts
+Title: Retirar el código legacy huérfano de marcado-ui (anotaciones, DocumentViewer, DocumentSidebar, types.ts, utils/frontmatter)
+Status: draft
+Current node: ritual-execution
+Task type: task.refactor
+From drawer: desk/drawer/report-ui-purpose-gap.md
+Lifecycle gates:
+- task_activates -> ritual-testing: open [(none)]

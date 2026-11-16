@@ -1,0 +1,150 @@
+{
+  "url": "http://localhost:5291/",
+  "date": "2026-11-16T12:55:49.039Z",
+  "navigatorEntriesAfterUploads": [
+    "Open sample: Semantic Markdown ASG — Canonical Example SAMPLE Start from a bundled example to inspect structure, markers, and the dual source/render flow.",
+    "file:api-design-guidelines.md api-design-guidelines.md 0 markers 0 namespaces OPENED",
+    "Semantic Markdown ASG — Canonical Example marcado-canonical-example 5 markers 3 namespaces BUNDLED",
+    "file:project-architecture.md project-architecture.md 0 markers 0 namespaces OPENED",
+    "file:research-state-management.md research-state-management.md 0 markers 0 namespaces OPENED",
+    "file:sprint-planning-week4.md sprint-planning-week4.md 0 markers 0 namespaces CURRENT"
+  ],
+  "timings": [
+    {
+      "screen": "Carga inicial (doc por defecto: canonical example)",
+      "ms": 459,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-00-initial-load.png"
+    },
+    {
+      "screen": "Navegador: marcado-canonical-example",
+      "ms": 94,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-01-nav-canonical.png"
+    },
+    {
+      "screen": "Vista Source (canonical)",
+      "ms": 65,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-02-canonical-source.png"
+    },
+    {
+      "screen": "Vista Rendered (canonical)",
+      "ms": 178,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-03-canonical-rendered.png"
+    },
+    {
+      "screen": "Filtro de capa: Structure (canonical)",
+      "ms": 97,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-04-layer-structure.png"
+    },
+    {
+      "screen": "Filtro de capa: Semantics (canonical)",
+      "ms": 109,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-05-layer-semantics.png"
+    },
+    {
+      "screen": "Filtro de capa: Rhetoric (canonical)",
+      "ms": 230,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-06-layer-rhetoric.png"
+    },
+    {
+      "screen": "Filtro de capa: All (canonical)",
+      "ms": 101,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-07-layer-all.png"
+    },
+    {
+      "screen": "Start here: Open sample (canonical)",
+      "ms": 96,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-08-open-sample.png"
+    },
+    {
+      "screen": "Upload src/data/api-design-guidelines.md",
+      "ms": 197,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-09-upload-api-design-guidelines.png"
+    },
+    {
+      "screen": "Upload src/data/project-architecture.md",
+      "ms": 285,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-10-upload-project-architecture.png"
+    },
+    {
+      "screen": "Upload src/data/research-state-management.md",
+      "ms": 118,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-11-upload-research-state-management.png"
+    },
+    {
+      "screen": "Upload src/data/sprint-planning-week4.md",
+      "ms": 153,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-12-upload-sprint-planning-week4.png"
+    },
+    {
+      "screen": "Navegador [0]: Open sample: Semantic Markdown ASG — Canonical Example SAMPLE Start fr",
+      "ms": 68,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-13-nav-entry-0.png"
+    },
+    {
+      "screen": "Navegador [1]: file:api-design-guidelines.md api-design-guidelines.md 0 markers 0 nam",
+      "ms": 182,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-14-nav-entry-1.png"
+    },
+    {
+      "screen": "Navegador [2]: Semantic Markdown ASG — Canonical Example marcado-canonical-example 5 ",
+      "ms": 108,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-15-nav-entry-2.png"
+    },
+    {
+      "screen": "Navegador [3]: file:project-architecture.md project-architecture.md 0 markers 0 names",
+      "ms": 223,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-16-nav-entry-3.png"
+    },
+    {
+      "screen": "Navegador [4]: file:research-state-management.md research-state-management.md 0 marke",
+      "ms": 178,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-17-nav-entry-4.png"
+    },
+    {
+      "screen": "Navegador [5]: file:sprint-planning-week4.md sprint-planning-week4.md 0 markers 0 nam",
+      "ms": 167,
+      "rendered": true,
+      "err": null,
+      "screenshot": "screen-18-nav-entry-5.png"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "failedRequests": []
+}

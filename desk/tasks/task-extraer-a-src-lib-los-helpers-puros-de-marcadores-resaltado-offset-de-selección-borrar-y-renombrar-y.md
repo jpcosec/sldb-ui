@@ -1,7 +1,7 @@
 ---
 sldb:
   by: agent
-  at: '2026-11-16T12:43:50Z'
+  at: '2026-11-16T13:15:31Z'
   authority: generated
   via: save_document_payload
 id: task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y
@@ -15,6 +15,8 @@ current_node: ritual-execution
 history: []
 references:
 - 7f0579a:desk/drawer/report-ui-purpose-gap.md (git show)
+- 08db3d0
+- runs/subagents/20261116-marcado-ui-marker-helpers/validation-rc.log
 depends_on: []
 pills: []
 files:

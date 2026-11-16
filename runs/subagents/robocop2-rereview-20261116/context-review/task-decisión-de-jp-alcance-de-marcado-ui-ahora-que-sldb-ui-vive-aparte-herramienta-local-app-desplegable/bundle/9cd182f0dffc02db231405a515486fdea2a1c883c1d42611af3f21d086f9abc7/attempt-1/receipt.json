@@ -1,0 +1,9 @@
+{
+  "key": "task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable/bundle",
+  "technical_ok": true,
+  "returncode": 0,
+  "input_sha256": "9cd182f0dffc02db231405a515486fdea2a1c883c1d42611af3f21d086f9abc7",
+  "output_sha256": "db139c3b2822ee0e66b2c4f118a093c6a023cea1dd2e9c45a782f79e3ec7d98a",
+  "start": "2026-11-16T12:46:30.316800+00:00",
+  "end": "2026-11-16T12:46:49.918355+00:00"
+}

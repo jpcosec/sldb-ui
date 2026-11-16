@@ -1,0 +1,8 @@
+Task: task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y
+Title: Extraer a src/lib los helpers puros de marcadores (resaltado, offset de selección, borrar y renombrar) y cubrirlos con tests unitarios
+Status: draft
+Current node: ritual-execution
+Task type: task.refactor
+From drawer: desk/drawer/report-ui-purpose-gap.md
+Lifecycle gates:
+- task_activates -> ritual-testing: open [(none)]
