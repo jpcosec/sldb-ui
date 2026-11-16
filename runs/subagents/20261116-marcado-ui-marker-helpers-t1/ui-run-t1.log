@@ -1,0 +1,27 @@
+OK   rendered/all: spans DOM == buildHighlightedMarkdown(lib) :: {"got":6,"exp":6}
+OK   rendered/all: todo span tiene marker-highlight-<ns> y data-marker-count :: ["marker-highlight marker-highlight-struct#1","marker-highlight marker-highlight-sem#1","marker-highlight marker-highlight-sem#2","marker-highlight marker-highlight-sem#1","marker-highlight marker-highlight-rhet#1","marker-highlight marker-highlight-rhet#1"]
+OK   rendered/all: hay tramo solapado data-marker-count=2 :: [{"cls":"marker-highlight marker-highlight-sem","count":"2","title":"sem:concept.semantic_markdown | sem:function.definition"}]
+OK   source: textarea con el canónico (frontmatter + 5 marcadores) :: 1312
+OK   capa Structure: spans == lib (1) :: {"got":1,"exp":1,"cls":["marker-highlight marker-highlight-struct"]}
+OK   capa Semantics: spans == lib (3) :: {"got":3,"exp":3,"cls":["marker-highlight marker-highlight-sem"]}
+OK   capa Rhetoric: spans == lib (2) :: {"got":2,"exp":2,"cls":["marker-highlight marker-highlight-rhet"]}
+OK   capa All: spans == lib (6) :: {"got":6,"exp":6,"cls":["marker-highlight marker-highlight-struct","marker-highlight marker-highlight-sem","marker-highlight marker-highlight-rhet"]}
+OK   getTextOffset (nodo texto) en DOM real == indexOf en textContent :: {"off":285,"expected":285,"pOff":347,"pExp":347}
+OK   getTextOffset (nodo elemento, offset=hijos) == fin del <p> :: {"off":285,"expected":285,"pOff":347,"pExp":347}
+OK   mouseup con selección abre el composer con el texto
+OK   add marker desde selección envuelve "Pure trees" en el source :: "overlap_limitation -->\n<!-- sem:concept.t1_probe -->Pure trees<!-- /sem:concept.t1_probe --> cannot represent crossing s"
+OK   reset devuelve el source original :: 1312
+OK   rename: window.prompt "Rename marker key" con default struct:intro :: [{"type":"prompt","message":"Rename marker key","default":"struct:intro","answer":"struct:intro_t1"}]
+OK   rename: source == before con la clave cambiada en apertura y cierre
+OK   rename: source UI == renameMarkerInSource(lib)
+OK   rename: frontmatter intacto :: 537
+OK   rename: inspector muestra Rename struct:intro_t1
+OK   rename: span con title struct:intro_t1
+OK   rename cancelado no cambia el source
+OK   delete: source == before sin apertura ni cierre del marcador :: {"before":1318,"after":1257}
+OK   delete: frontmatter intacto
+OK   delete: el frontmatter sigue declarando el edge (no se toca el YAML)
+OK   delete: inspector ya no lista rhet:decision.use_asg
+OK   delete: ningún span con title rhet:decision.use_asg :: 5
+timings [{"screen":"home","ms":512,"error":null},{"screen":"open-sample","ms":95,"error":null},{"screen":"rendered-all","ms":110,"error":null},{"screen":"source-view","ms":120,"error":null},{"screen":"layer-structure","ms":234,"error":null},{"screen":"layer-semantics","ms":977,"error":null},{"screen":"layer-rhetoric","ms":262,"error":null},{"screen":"layer-all","ms":236,"error":null},{"screen":"selection","ms":898,"error":null},{"screen":"rename-marker","ms":795,"error":null},{"screen":"rename-cancel","ms":608,"error":null},{"screen":"delete-marker","ms":642,"error":null},{"screen":"final-rendered","ms":52,"error":null}]
+errors []

@@ -1,0 +1,23 @@
+$ npx vitest run && npm run build && ! grep -rnE "AnnotationPopup|AnnotationsList|DocumentViewer|DocumentSidebar|useAnnotation|utils/frontmatter" src
+# HEAD 649cea7, 2026-11-16T09:59:25-03:00
+ RUN  v4.1.9 /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui
+ Test Files  4 passed (4)
+      Tests  23 passed (23)
+   Start at  09:59:28
+   Duration  9.98s (transform 1.12s, setup 620ms, import 2.91s, tests 12.32s, environment 8.00s)
+> @marcado/ui@0.0.0 build
+> vite build
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 331 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.46 kB │ gzip:   0.30 kB
+dist/assets/index-xAmsR0rN.css   38.45 kB │ gzip:   7.38 kB
+dist/assets/index-CHnBSBEj.js   536.89 kB │ gzip: 162.13 kB
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 5.08s
+rc=0

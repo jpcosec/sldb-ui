@@ -1,0 +1,60 @@
+=== $ cd /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui && TMPDIR=/dev/shm npx vitest run src/__tests__/marker-render.test.ts src/__tests__/marker-edit.test.ts
+
+ RUN  v4.1.9 /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui
+
+
+ Test Files  2 passed (2)
+      Tests  8 passed (8)
+   Start at  10:11:40
+   Duration  1.57s (transform 173ms, setup 229ms, import 151ms, tests 65ms, environment 2.04s)
+
+=== exit=0
+
+=== $ cd /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui && TMPDIR=/dev/shm npx vitest run
+
+ RUN  v4.1.9 /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui
+
+
+ Test Files  6 passed (6)
+      Tests  31 passed (31)
+   Start at  10:11:43
+   Duration  8.59s (transform 731ms, setup 874ms, import 2.54s, tests 10.03s, environment 10.29s)
+
+=== exit=0
+
+=== $ cd /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui && npm run build
+
+> @marcado/ui@0.0.0 build
+> vite build
+
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 333 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.46 kB │ gzip:   0.30 kB
+dist/assets/index-xAmsR0rN.css   38.45 kB │ gzip:   7.38 kB
+dist/assets/index-AVAJm31O.js   536.92 kB │ gzip: 162.12 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.00s
+=== exit=0
+
+=== $ cd /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui && ! grep -n "function buildHighlightedMarkdown\|function getTextOffset" src/components/document-workspace.tsx
+=== exit=0
+
+=== $ cd /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui && TMPDIR=/dev/shm npx vitest run src/__tests__/integration.test.tsx src/__tests__/marcado-ui.ux.test.tsx
+
+ RUN  v4.1.9 /mnt/ssd/proyectos/SLDB_1/UIs/marcado-ui
+
+
+ Test Files  2 passed (2)
+      Tests  18 passed (18)
+   Start at  10:11:56
+   Duration  6.83s (transform 556ms, setup 221ms, import 1.61s, tests 9.19s, environment 1.94s)
+
+=== exit=0
+

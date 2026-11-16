@@ -1,0 +1,56 @@
+7c7
+<     body.slice(marker.closeMarkerEnd);
+---
+>     body.slice(marker.closeMarkerEnd + 1);
+27c27
+<     body.slice(marker.closeMarkerEnd);
+---
+>     body.slice(marker.closeMarkerEnd + 1);
+
+ RUN  v4.1.9 /dev/shm/mui-t1-mut
+
+ ❯ src/__tests__/marker-edit.test.ts (3 tests | 2 failed) 13ms
+     × borrar quita la apertura y el cierre y deja el texto interior 8ms
+     × renombrar cambia la clave en la apertura y el cierre sin tocar otra aparición del mismo texto 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/__tests__/marker-edit.test.ts > marker-edit > borrar quita la apertura y el cierre y deja el texto interior
+AssertionError: expected 'Hola mundofin' to be 'Hola mundo fin' // Object.is equality
+
+Expected: "Hola mundo fin"
+Received: "Hola mundofin"
+
+ ❯ src/__tests__/marker-edit.test.ts:11:81
+      9|     const source = "Hola <!-- sem:a -->mundo<!-- /sem:a --> fin";
+     10|     const doc = parseMarcadoDocument("doc", source);
+     11|     expect(removeMarkerFromSource(source, doc.bodySourceStart, doc.mar…
+       |                                                                                 ^
+     12|   });
+     13|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/__tests__/marker-edit.test.ts > marker-edit > renombrar cambia la clave en la apertura y el cierre sin tocar otra aparición del mismo texto
+AssertionError: expected 'sem:a <!-- sem:b -->sem:a<!-- /sem:b …' to be 'sem:a <!-- sem:b -->sem:a<!-- /sem:b …' // Object.is equality
+
+Expected: "sem:a <!-- sem:b -->sem:a<!-- /sem:b --> sem:a"
+Received: "sem:a <!-- sem:b -->sem:a<!-- /sem:b -->sem:a"
+
+ ❯ src/__tests__/marker-edit.test.ts:17:88
+     15|     const source = "sem:a <!-- sem:a -->sem:a<!-- /sem:a --> sem:a";
+     16|     const doc = parseMarcadoDocument("doc", source);
+     17|     expect(renameMarkerInSource(source, doc.bodySourceStart, doc.marke…
+       |                                                                                        ^
+     18|       "sem:a <!-- sem:b -->sem:a<!-- /sem:b --> sem:a"
+     19|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+   Start at  10:12:09
+   Duration  1.22s (transform 107ms, setup 93ms, import 83ms, tests 13ms, environment 816ms)
+
+exit=1

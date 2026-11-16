@@ -1,0 +1,17 @@
+src/App.tsx(377,32): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/App.tsx(377,32): error TS18048: 'window.showOpenFilePicker' is possibly 'undefined'.
+src/App.tsx(412,35): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/App.tsx(412,35): error TS18048: 'window.showDirectoryPicker' is possibly 'undefined'.
+src/App.tsx(736,10): error TS6133: 'PurposeCard' is declared but its value is never read.
+src/components/document-workspace.tsx(357,156): error TS2322: Type 'RefObject<HTMLDivElement | null>' is not assignable to type 'LegacyRef<HTMLDivElement> | undefined'.
+  Type 'RefObject<HTMLDivElement | null>' is not assignable to type 'RefObject<HTMLDivElement>'.
+    Type 'HTMLDivElement | null' is not assignable to type 'HTMLDivElement'.
+      Type 'null' is not assignable to type 'HTMLDivElement'.
+src/lib/marcado.ts(162,7): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'Partial<GraphEdge>'.
+  No index signature with a parameter of type 'string' was found on type 'Partial<GraphEdge>'.
+vite.config.ts(12,13): error TS7006: Parameter 'id' implicitly has an 'any' type.
+vite.config.ts(27,19): error TS7006: Parameter 'server' implicitly has an 'any' type.
+vite.config.ts(28,52): error TS7006: Parameter 'req' implicitly has an 'any' type.
+vite.config.ts(28,57): error TS7006: Parameter 'res' implicitly has an 'any' type.
+vite.config.ts(36,23): error TS7006: Parameter 'chunk' implicitly has an 'any' type.
+EXIT=2
