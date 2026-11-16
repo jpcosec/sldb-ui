@@ -210,7 +210,6 @@ include:
   - desk/tasks/Board.md
 - model: TaskRefactorDoc
   paths:
-  - desk/tasks/task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts.md
   - desk/tasks/task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y.md
 - model: TaskDecisionDoc
   paths:
@@ -271,6 +270,8 @@ include:
     name: review-task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y-evidence-commit-1
   - path: desk/reviews/task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y/evidence-atom-1.md
     name: review-task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y-evidence-atom-1
+  - path: desk/reviews/task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable/owner-1.md
+    name: review-task-decisión-de-jp-alcance-de-marcado-ui-ahora-que-sldb-ui-vive-aparte-herramienta-local-app-desplegable-owner-1
 - model: RunDoc
   paths:
   - path: runs/subagents/20261116-marcado-ui-legacy/run.md
