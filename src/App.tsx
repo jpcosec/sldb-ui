@@ -6,6 +6,7 @@ import { WorkspaceMain, WorkspaceShell, WorkspaceSidebar, WorkspaceSidebarHeader
 import { loadDocuments } from "./data/documents";
 import { marcadoAdapter } from "./lib/marcado-adapter";
 import { type MarcadoDocument, type MarkerRange } from "./lib/marcado";
+import { removeMarkerFromSource, renameMarkerInSource } from "./lib/marker-edit";
 import {
   basenameWithoutExtension,
   createInitialWorkspaceDocumentStore,
@@ -511,16 +512,7 @@ export default function App() {
   const handleDeleteMarker = (marker: MarkerRange) => {
     if (!selectedDoc) return;
     const currentSource = getWorkspaceSource(workspaceDocuments, selectedDoc.slug, selectedDoc.source);
-    const body = currentSource.slice(selectedDoc.bodySourceStart);
-    const nextBody =
-      body.slice(0, marker.closeMarkerStart) +
-      body.slice(marker.closeMarkerEnd);
-    const adjustedOpenStart = marker.openMarkerStart;
-    const adjustedOpenEnd = marker.openMarkerEnd;
-    const finalBody =
-      nextBody.slice(0, adjustedOpenStart) +
-      nextBody.slice(adjustedOpenEnd);
-    const nextSource = currentSource.slice(0, selectedDoc.bodySourceStart) + finalBody;
+    const nextSource = removeMarkerFromSource(currentSource, selectedDoc.bodySourceStart, marker);
     setWorkspaceDocuments((current) =>
       upsertWorkspaceDocument(current, marcadoAdapter.handoff({ slug: selectedDoc.slug, source: nextSource }))
     );
@@ -533,18 +525,7 @@ export default function App() {
     const nextKey = window.prompt("Rename marker key", marker.key);
     if (!nextKey || nextKey === marker.key) return;
     const currentSource = getWorkspaceSource(workspaceDocuments, selectedDoc.slug, selectedDoc.source);
-    const body = currentSource.slice(selectedDoc.bodySourceStart);
-    const openRaw = body.slice(marker.openMarkerStart, marker.openMarkerEnd);
-    const closeRaw = body.slice(marker.closeMarkerStart, marker.closeMarkerEnd);
-    const nextOpenRaw = openRaw.replace(marker.key, nextKey);
-    const nextCloseRaw = closeRaw.replace(marker.key, nextKey);
-    const nextBody =
-      body.slice(0, marker.openMarkerStart) +
-      nextOpenRaw +
-      body.slice(marker.openMarkerEnd, marker.closeMarkerStart) +
-      nextCloseRaw +
-      body.slice(marker.closeMarkerEnd);
-    const nextSource = currentSource.slice(0, selectedDoc.bodySourceStart) + nextBody;
+    const nextSource = renameMarkerInSource(currentSource, selectedDoc.bodySourceStart, marker, nextKey);
     setWorkspaceDocuments((current) =>
       upsertWorkspaceDocument(current, marcadoAdapter.handoff({ slug: selectedDoc.slug, source: nextSource }))
     );
