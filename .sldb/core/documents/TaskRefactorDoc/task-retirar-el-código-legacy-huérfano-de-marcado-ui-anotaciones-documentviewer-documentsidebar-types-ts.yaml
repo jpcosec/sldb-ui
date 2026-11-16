@@ -1,0 +1,40 @@
+name: task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts
+path: desk/tasks/task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts.md
+source_hash: b2115b02f61c74803a7f70b74fd3f84b4eba0912bc7b122d5597c8e5cd663a64
+content_hash: 06ec17ba009db2257cf5f8c08cad54aba7c86d9e2163ee09e56c6120d9de992a
+field_hashes:
+  title: 5664d0143a54b34a34ff3c0c252bb3b67baabce508b882dba0dfe273bdca7530
+  id: 3203b4115570425003aaf823d3861388d46e000b1e957a7bf64489e7f0801c43
+  status: 6ae048f08fcab44bfbc8463f074bfdb40f94c6bdf56d3aad9a7e1c05e5d5b5c1
+  summary: 12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126
+  tags: 97dc0408038530d73322d1543c5d5c1e8e0b0f6039702ceb4a4cdb7214e119e2
+  current_node: ff5161892aac34735bf10c411f7230b62b7b56446e230a5d26fb75afde4704b6
+  history: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  why: c722e93304d0f2dd733c76c115799ca8dc68a5da4e9ad5172561f7f5844e47f6
+  goal: a1d27809988a53d27d1769eca5d3a0af93fa2e5211e6eb58147851c70e430e3d
+  scope: ec54dcf8b786a341cbfcdbae118d45dc0ad77c75b3c99b12a408af28082680de
+  references: 8ef364edcac5f13e77383e2008df6e6a513a868f476b5cc284cb59b391f5e1a5
+  depends_on: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  pills: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  files: 4a3a8cdb08f4222dd09e04ce217d35281868fca176a95f439f8a0ea18a1b3d0d
+  implementation_path: b4c4c8f88c6a3d1ebe9cfc8b47eb783abdc45bd0634cf38618b4cb61db94fad8
+  validation: 7364793ca30b9c87a3c09de5d385c6a2a20d1ba824eb6130f604a4edead49b94
+  done_when: ab83ffe663de36e66bf9045b342438ac11df599ab8fb0b9b6312c9af69762a69
+  task_type: d0b4cbfeadc448bca1492079dfd36948fd84b4ae366c521b0e71add2bea3fa86
+  inherits_from: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  inherit_acceptance_context: fcbcf165908dd18a9e49f7ff27810176db8e9f63b4352213741664245224f8aa
+  atoms: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+  from_drawer: 3e774dce73e11473efaaba95e6d527612fcf23e0ce769d6a1d17c6159e5f39fc
+semantic_tags:
+- artifact:task
+- host:local
+- representation.markdown
+- source.document.markdown
+- type.workflow.task
+- workspace.desk
+- workspace:desk
+provenance:
+  by: agent
+  at: '2026-11-16T05:16:15Z'
+  authority: generated
+  via: save_document_payload
