@@ -177,6 +177,90 @@ models:
   - type.documentation.faq
   - workspace.docs.faq
   origin: deskops
+- name: ReviewDoc
+  model_ref: deskops.models:ReviewDoc
+  path: ''
+  models_index: .sldb/core/models/ReviewDoc.yaml
+  version: 1
+  canonical: false
+  family: null
+  semantics: []
+  origin: deskops
+- name: TaskAggregateDoc
+  model_ref: deskops.models:TaskAggregateDoc
+  path: ''
+  models_index: .sldb/core/models/TaskAggregateDoc.yaml
+  version: 1
+  canonical: false
+  family: null
+  semantics: []
+  origin: deskops
+- name: TaskCodeDoc
+  model_ref: deskops.models:TaskCodeDoc
+  path: ''
+  models_index: .sldb/core/models/TaskCodeDoc.yaml
+  version: 1
+  canonical: false
+  family: null
+  semantics: []
+  origin: deskops
+- name: TaskDebugDoc
+  model_ref: deskops.models:TaskDebugDoc
+  path: ''
+  models_index: .sldb/core/models/TaskDebugDoc.yaml
+  version: 1
+  canonical: false
+  family: null
+  semantics: []
+  origin: deskops
+- name: TaskDecisionDoc
+  model_ref: deskops.models:TaskDecisionDoc
+  path: ''
+  models_index: .sldb/core/models/TaskDecisionDoc.yaml
+  version: 1
+  canonical: false
+  family: null
+  semantics: []
+  origin: deskops
+- name: TaskDocsDoc
+  model_ref: deskops.models:TaskDocsDoc
+  path: ''
+  models_index: .sldb/core/models/TaskDocsDoc.yaml
+  version: 1
+  canonical: false
+  family: null
+  semantics: []
+  origin: deskops
+- name: TaskExternalDoc
+  model_ref: deskops.models:TaskExternalDoc
+  path: ''
+  models_index: .sldb/core/models/TaskExternalDoc.yaml
+  version: 1
+  canonical: false
+  family: null
+  semantics: []
+  origin: deskops
+- name: TaskRefactorDoc
+  model_ref: deskops.models:TaskRefactorDoc
+  path: ''
+  models_index: .sldb/core/models/TaskRefactorDoc.yaml
+  version: 1
+  canonical: false
+  family: null
+  semantics: []
+  origin: deskops
+- name: RuleDoc
+  model_ref: sldb.models.rule_doc:RuleDoc
+  path: /home/jp/proyectos/SLDB_1/sldb/src/sldb/models/rule_doc.py
+  models_index: .sldb/core/models/RuleDoc.yaml
+  version: 1
+  canonical: false
+  family: rule
+  semantics:
+  - layer.governance
+  - representation.markdown
+  - source.document.markdown
+  - type.rule
 predicates:
 - name: has_model
   axis: WHAT
@@ -234,4 +318,4 @@ predicates:
   description: A composed field of the source (`__compositions__`) renders this document's
     payload into the source's text; the edge carries the composed field, the field
     holding the refs and the ref as authored.
-store_hash: 3b2fefae06068a0d1e08e0aecc5773ccc3fe0f48ac6036b77483aea4bc2286fd
+store_hash: a6826a5e5efbf95fa6068f8c2848ae87645efa56a116509e294e948143dd56d3
