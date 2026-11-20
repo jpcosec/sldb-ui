@@ -1,0 +1,13 @@
+## REFORMULACION
+Nodo ejecutable, no agregado. **Propósito:** retirar de `UIs/marcado-ui` el subsistema legacy huérfano de anotaciones, `DocumentViewer`, `DocumentSidebar`, `types.ts` y `utils/frontmatter`. **Resultado:** borrar con `git rm` exactamente 14 archivos —8 fuentes y 6 tests— sin cambiar el comportamiento del workspace; las suites vivas deben seguir en 4 archivos/23 tests y `npm run build` debe compilar. **Repo:** `/home/jp/proyectos/SLDB_1/UIs/marcado-ui`, rama `main`, local; evidencia en `runs/subagents/20261116-marcado-ui-legacy/`. **Límites:** no tocar `package.json`, `README.md`, `App.tsx`, `document-workspace.tsx`, `workspace-shell/navigator`, `src/lib/*`, estilos ni añadir funciones. Si el grep halla un archivo vivo, no se borra el archivo listado del que dependa, se sigue con el resto y se anota en `result-summary.md`; si falla la compilación de un vivo, se restaura lo borrado y se anota.
+
+## AMBIGUEDADES
+1. “si el grep del paso 2 encuentra una coincidencia en un archivo que no está en la lista, ese archivo vivo depende de algo de la lista”. Obligaría a inventar si una mera mención textual —comentario, string o nombre en un test— equivale a dependencia, y cuál de los 14 archivos retener cuando la coincidencia es genérica (`useAnnotation`, `/types`).
+2. “Los 14 archivos ya no están en HEAD” frente a “git rm de los 14 archivos”. Obligaría a inventar si hace falta commit para cerrar o basta con el index/worktree; `git rm` no altera `HEAD`.
+3. “El grep del paso 2 no devuelve nada en src/” frente al comando de validación, que omite `/types`. Obligaría a inventar si una importación viva a `../types` bloquea el cierre aunque el grep de validación pase.
+
+## DRY-RUN
+**Lecturas:** TaskDoc, rituales execution/testing/closeout, los 14 archivos y estado de git. **Cambios previstos:** ejecutar goldens antes hacia `goldens-before.txt`; registrar evidencia con `deskops review record`; ejecutar el grep; si todas las coincidencias están en la lista, `git rm` de 8 fuentes y 6 tests; si no, retener el archivo listado implicado y anotarlo; repetir goldens después; `npm run build`; vitest completo. **Dependencias:** git, npm, npx/vitest, deskops, `TMPDIR=/dev/shm` y el directorio de run. **Validaciones futuras:** goldens before/after con 4 archivos y 23 tests; build exit 0; vitest completo 4/23; grep final vacío. Sin ejecutar.
+
+## FUTURO
+El ritual de closeout actualiza el Board y deja el cambio listo para commit; un humano decide el commit y revisa `result-summary.md`. Si la regla de parada retiene archivos o aparece una dependencia viva, otro nodo o un humano decide el refactor o la retirada posterior.

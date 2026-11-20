@@ -1,0 +1,9 @@
+{
+  "key": "task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y/preflight",
+  "technical_ok": true,
+  "returncode": 0,
+  "input_sha256": "895c18df6b4fa8b984bf0f1719e0800d4134428ed49b9bd298afb280439e9115",
+  "output_sha256": "01f19cc39af4d0ef10dfc37413596ba4e6184f6780756d1add055798872ff015",
+  "start": "2026-11-16T05:32:21.931288+00:00",
+  "end": "2026-11-16T05:32:32.528965+00:00"
+}

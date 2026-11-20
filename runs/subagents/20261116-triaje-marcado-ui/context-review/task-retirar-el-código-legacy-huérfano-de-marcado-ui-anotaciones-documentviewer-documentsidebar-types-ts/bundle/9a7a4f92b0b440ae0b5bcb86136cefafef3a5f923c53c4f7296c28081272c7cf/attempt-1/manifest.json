@@ -1,0 +1,132 @@
+{
+  "key": "task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts/bundle",
+  "input_sha256": "9a7a4f92b0b440ae0b5bcb86136cefafef3a5f923c53c4f7296c28081272c7cf",
+  "argv": [
+    "pi",
+    "--provider",
+    "deepseek",
+    "--model",
+    "deepseek-flash",
+    "--thinking",
+    "low",
+    "--offline",
+    "--no-session",
+    "--no-context-files",
+    "--no-skills",
+    "--no-extensions",
+    "--no-prompt-templates",
+    "--no-tools",
+    "--print",
+    "--system-prompt",
+    "Revisor barato aislado de un encargo de planificación. Trabajas solo con el input explícito: sin herramientas, historial ni otras fuentes. No ejecutas nada. Responde en español con estas secciones exactas: REFORMULACION (propósito, resultado, repo, límites), AMBIGUEDADES (numeradas, cada una con cita textual del input y qué obligaría a inventar; escribe \"ninguna\" si no hay), DRY-RUN (lecturas, cambios previstos, dependencias y validaciones futuras, sin ejecutar), FUTURO (lo que produce otro nodo o decide un humano, no ambigüedad). REFORMULACION describe el encargo del nodo, no esta revisión. DRY-RUN describe cómo lo ejecutaría un ejecutor futuro, hipotéticamente y sin ejecutar nada. Si el nodo es un agregado o paquete no ejecutable, dilo y además recorre cómo lo cumplen sus hijos, qué transfiere cada uno al siguiente y cómo se valida el resultado conjunto. Máximo 350 palabras.",
+    "@/home/jp/proyectos/SLDB_1/UIs/marcado-ui/runs/subagents/20261116-triaje-marcado-ui/context-review/task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts/bundle/9a7a4f92b0b440ae0b5bcb86136cefafef3a5f923c53c4f7296c28081272c7cf/attempt-1/input.md"
+  ],
+  "model": "deepseek/deepseek-flash",
+  "profile": "runtime-pi-deepseek-flash",
+  "selection_reason": "deepseek-flash: perfil barato verificado en esta máquina por ritual-context-review (D4)",
+  "sources": [
+    {
+      "path": "desk/tasks/task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts.md",
+      "sha256": "39199e19bd5b09bfc87bcb64ecbe44f93f0ff3d8d2a84d79050863c0d30fc91a",
+      "projection": "whole_file"
+    },
+    {
+      "path": "desk/rituals/execution.md",
+      "sha256": "382bffb17f53b0a3a2d3c24c2f4aecfd9ae2702f7449859ce56fb31d26f7ecb3",
+      "projection": "whole_file"
+    },
+    {
+      "path": "desk/rituals/testing.md",
+      "sha256": "ee77594f5fe60f49f4fdd497c4b65d7c305070b5ece481dd3fcb92890fb1f341",
+      "projection": "whole_file"
+    },
+    {
+      "path": "desk/rituals/closeout.md",
+      "sha256": "811cc13a3ee0fc17a4a88485af2458a0cd831bd0475bb0353f0e92b7d716ebf1",
+      "projection": "whole_file"
+    },
+    {
+      "path": "src/components/AnnotationPopup.tsx",
+      "sha256": "6fe6790fd39797d672d4838d081abaea8c51b45e692849cb4d95852d474fe075",
+      "projection": "whole_file"
+    },
+    {
+      "path": "src/components/AnnotationsList.tsx",
+      "sha256": "b8984d9ae073890da3dfa4f69fefc1c51bcaaca91a82d7661e7df38e1f1b5c55",
+      "projection": "whole_file"
+    },
+    {
+      "path": "src/components/DocumentViewer.tsx",
+      "sha256": "c55f7ef045398173237d0e13723ccacc9a470f23d54fd1aa0f6fa855f2ef239f",
+      "projection": "whole_file"
+    },
+    {
+      "path": "src/components/DocumentSidebar.tsx",
+      "sha256": "1b4e754b8d0ef9f1d50b0dd509ebeaa90e4780b52cb263e98fa64163e3e223f0",
+      "projection": "whole_file"
+    },
+    {
+      "path": "src/hooks/useAnnotations.ts",
+      "sha256": "5425aaeb3c3940a71f106fd37a22d3fc8ec3de1ad2a1c5e1ddba418268529837",
+      "projection": "whole_file"
+    },
+    {
+      "path": "src/hooks/useAnnotationHighlights.ts",
+      "sha256": "401f0d1c6e6afbfadf2d26a815e71bd1b014bba0ab371724f1fca7327d1017fb",
+      "projection": "whole_file"
+    },
+    {
+      "path": "src/types.ts",
+      "sha256": "235ade7b1de000269d199db5fdf340ae01804c8de669d54f34285175b759ecdf",
+      "projection": "whole_file"
+    },
+    {
+      "path": "src/utils/frontmatter.ts",
+      "sha256": "27ffb8c5f0b1c62f1a35e6e6c74170980ae678bfaaebb70afb16dbbf5e904b45",
+      "projection": "whole_file"
+    },
+    {
+      "path": "src/__tests__/annotationPopup.test.tsx",
+      "sha256": "ca8d028b4a00fa0f488ea8c4abbb4c3feb1f76dcd35e6acd0b057c01eb560c9d",
+      "projection": "whole_file"
+    },
+    {
+      "path": "src/__tests__/annotationsList.test.tsx",
+      "sha256": "f85fa28f3b18c6e0119ea04190862d54f90a491503246d7c287a516aa98986b6",
+      "projection": "whole_file"
+    },
+    {
+      "path": "src/__tests__/documentViewer.test.tsx",
+      "sha256": "81ae8da4fd43c1999c22f141c2ec233678c07aac0a7cd13105bc63f3dbdbe5eb",
+      "projection": "whole_file"
+    },
+    {
+      "path": "src/__tests__/sidebar.test.tsx",
+      "sha256": "6021b4d156b90b971dea22bbc318a992991d5ff3a9854670ecae3d6a64a56c32",
+      "projection": "whole_file"
+    },
+    {
+      "path": "src/__tests__/useAnnotations.test.ts",
+      "sha256": "9734ed822be2144daf76fb8f70a5d9ef171c87d8060b796b71c1decef3bc1c70",
+      "projection": "whole_file"
+    },
+    {
+      "path": "src/__tests__/utils.test.ts",
+      "sha256": "3bd3f8cfa08deab94d12ac6efa38569fe907515bdb56d1021466ba59b5654b83",
+      "projection": "whole_file"
+    },
+    {
+      "path": "package.json",
+      "sha256": "67d66038636086135710294d640df1350732f6d3981a7d7c546313c99af8ffb9",
+      "projection": "whole_file"
+    },
+    {
+      "path": "README.md",
+      "sha256": "2de4d49ae39d848d6e4270600eb3cf27424328395f2c3d3c0a62348d0db3296e",
+      "projection": "whole_file"
+    }
+  ],
+  "omitted_sources": [],
+  "started": "2026-11-16T05:11:22.424208+00:00",
+  "finished": "2026-11-16T05:11:35.914617+00:00"
+}

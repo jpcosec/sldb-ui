@@ -1,0 +1,9 @@
+{
+  "key": "task-retirar-el-código-legacy-huérfano-de-marcado-ui-anotaciones-documentviewer-documentsidebar-types-ts/bundle",
+  "technical_ok": true,
+  "returncode": 0,
+  "input_sha256": "2229f49630532bdcb83f48fcee1d3018a26291137227ef50c4544a006b9cd79f",
+  "output_sha256": "0007d1f71d2c0e5f1ce1c3e0df7bbaafe3ff275d81641ee1f541fe50b0911336",
+  "start": "2026-11-16T05:31:13.646578+00:00",
+  "end": "2026-11-16T05:31:37.092920+00:00"
+}

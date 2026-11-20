@@ -1,0 +1,84 @@
+{
+  "key": "task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y/bundle",
+  "input_sha256": "1cef9f230f204a08923856bcf88bea60aa65ec09527879bda123295c78d276e7",
+  "argv": [
+    "pi",
+    "--provider",
+    "deepseek",
+    "--model",
+    "deepseek-flash",
+    "--thinking",
+    "low",
+    "--offline",
+    "--no-session",
+    "--no-context-files",
+    "--no-skills",
+    "--no-extensions",
+    "--no-prompt-templates",
+    "--no-tools",
+    "--print",
+    "--system-prompt",
+    "Revisor barato aislado de un encargo de planificación. Trabajas solo con el input explícito: sin herramientas, historial ni otras fuentes. No ejecutas nada. Responde en español con estas secciones exactas: REFORMULACION (propósito, resultado, repo, límites), AMBIGUEDADES (numeradas, cada una con cita textual del input y qué obligaría a inventar; escribe \"ninguna\" si no hay), DRY-RUN (lecturas, cambios previstos, dependencias y validaciones futuras, sin ejecutar), FUTURO (lo que produce otro nodo o decide un humano, no ambigüedad). REFORMULACION describe el encargo del nodo, no esta revisión. DRY-RUN describe cómo lo ejecutaría un ejecutor futuro, hipotéticamente y sin ejecutar nada. Si el nodo es un agregado o paquete no ejecutable, dilo y además recorre cómo lo cumplen sus hijos, qué transfiere cada uno al siguiente y cómo se valida el resultado conjunto. Máximo 350 palabras.",
+    "@/home/jp/proyectos/SLDB_1/UIs/marcado-ui/runs/subagents/20261116-triaje-marcado-ui/context-review/task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y/bundle/1cef9f230f204a08923856bcf88bea60aa65ec09527879bda123295c78d276e7/attempt-1/input.md"
+  ],
+  "model": "deepseek/deepseek-flash",
+  "profile": "runtime-pi-deepseek-flash",
+  "selection_reason": "deepseek-flash: perfil barato verificado en esta máquina por ritual-context-review (D4)",
+  "sources": [
+    {
+      "path": "desk/tasks/task-extraer-a-src-lib-los-helpers-puros-de-marcadores-resaltado-offset-de-selección-borrar-y-renombrar-y.md",
+      "sha256": "85b52820d63ebf0868f21df9baccc553242273aafa6dc4b5d8cf34f651340dfb",
+      "projection": "whole_file"
+    },
+    {
+      "path": "desk/rituals/execution.md",
+      "sha256": "382bffb17f53b0a3a2d3c24c2f4aecfd9ae2702f7449859ce56fb31d26f7ecb3",
+      "projection": "whole_file"
+    },
+    {
+      "path": "desk/rituals/testing.md",
+      "sha256": "ee77594f5fe60f49f4fdd497c4b65d7c305070b5ece481dd3fcb92890fb1f341",
+      "projection": "whole_file"
+    },
+    {
+      "path": "desk/rituals/closeout.md",
+      "sha256": "811cc13a3ee0fc17a4a88485af2458a0cd831bd0475bb0353f0e92b7d716ebf1",
+      "projection": "whole_file"
+    },
+    {
+      "path": "src/components/document-workspace.tsx",
+      "sha256": "7e3fe367a410f2229e8c30b8d07efa733f1af42f3b25e6848b70c45355a7bf4a",
+      "projection": "whole_file"
+    },
+    {
+      "path": "src/App.tsx",
+      "sha256": "f38c6630567995a0dcc34328bf8b1ee92e83e90c3dd44f22244743ef81f5d5bc",
+      "projection": "whole_file"
+    },
+    {
+      "path": "src/data/marcado-canonical-example.md",
+      "sha256": "f6400e86b136ef1805cf555a93d7fabd73aece15f2c8bae6978652564c6e36eb",
+      "projection": "whole_file"
+    }
+  ],
+  "omitted_sources": [
+    {
+      "path": "src/lib/marker-render.ts",
+      "reason": "missing"
+    },
+    {
+      "path": "src/lib/marker-edit.ts",
+      "reason": "missing"
+    },
+    {
+      "path": "src/__tests__/marker-render.test.ts",
+      "reason": "missing"
+    },
+    {
+      "path": "src/__tests__/marker-edit.test.ts",
+      "reason": "missing"
+    }
+  ],
+  "started": "2026-11-16T05:32:34.216892+00:00",
+  "finished": "2026-11-16T05:32:53.232568+00:00"
+}
