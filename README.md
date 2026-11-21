@@ -1,6 +1,6 @@
 # @marcado/ui
 
-> **Repositorio archivado (2026-11-16).** JP decidió archivar marcado-ui: no recibe trabajo nuevo. Lo reutilizable (los helpers de `src/lib`, el parser y los huecos de interacción 6 y 7) pasa a **sldb-ui** (`UIs/sldb-ui`) como tarea de ese desk. La decisión está en [`docs/decisiones/2026-11-alcance-marcado-ui.md`](docs/decisiones/2026-11-alcance-marcado-ui.md).
+> **Repositorio archivado (2026-11-16).** JP archivó marcado-ui. La [decisión del 16 de noviembre](docs/decisiones/2026-11-alcance-marcado-ui.md) identificó los helpers de `src/lib`, el parser y los huecos de interacción 6 y 7 para su posible reutilización en sldb-ui. [JP también archivó sldb-ui el 21 de noviembre](../sldb-ui/docs/decisiones/2026-11-alcance-sldb-ui.md). Esas piezas y propuestas quedan como referencia. Para ver y editar un store se usa [la superficie de sldb](../../sldb/surface/README.md).
 
 Frontend workspace for inspecting, rendering, and editing Marcado documents.
 
